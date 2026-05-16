@@ -1,17 +1,25 @@
 from fastapi import HTTPException
-from app.schemas import OperationRequest
-from app.repository import wallets as wallets_repository
+from sqlalchemy.orm import Session
 
-def add_income(operation: OperationRequest):
+from app.repository.wallets import WalletsRepository
+from app.schemas import OperationRequest
+
+
+class OperationService:
+     def __init__(self, db: Session) -> None:
+          self.db = db
+          self.wallets_repository = WalletsRepository(db=db)
+
+def add_income(self, operation: OperationRequest) -> dict:
     # Проверяем существует ли такой кошелек
-    if not wallets_repository.is_wallet_exist(operation.wallet_name):
+    if not self.wallets_repository.is_wallet_exist(operation.wallet_name):
             raise HTTPException(
             status_code=404,
             detail= f'Wallet {operation.wallet_name} not found'
             )
     
     # Добавляем доход к балансу кошелька
-    wallet = wallets_repository.add_income(wallet_name=operation.wallet_name, amount=operation.amount)
+    wallet = self.wallets_repository.add_income(wallet_name=operation.wallet_name, amount=operation.amount)
 
     # Выводим информацию об операции
     return {
@@ -23,16 +31,16 @@ def add_income(operation: OperationRequest):
     }
 
 
-def add_expense(operation: OperationRequest):
+def add_expense(self, operation: OperationRequest) -> dict:
     # Проверяем существует ли такой кошелек
-    if not wallets_repository.is_wallet_exist(operation.wallet_name):
+    if not self.wallets_repository.is_wallet_exist(operation.wallet_name):
         raise HTTPException(
         status_code=404,
         detail= f'Wallet {operation.wallet_name} not found'
         )
     
     # Проверяем достаточно ли средств
-    wallet = wallets_repository.get_wallet_by_name(operation.wallet_name)
+    wallet = self.wallets_repository.get_wallet_by_name(operation.wallet_name)
     if wallet.balance < operation.amount:
         # если денег недостаточно поднимаем ошибку 400
         raise HTTPException(
@@ -41,7 +49,7 @@ def add_expense(operation: OperationRequest):
         )
     
     # Вычитаем расход из баланса кошелька
-    wallet = wallets_repository.add_expense(wallet_name=operation.wallet_name, amount=operation.amount)
+    wallet = self.wallets_repository.add_expense(wallet_name=operation.wallet_name, amount=operation.amount)
     
 
     # Возвращаем информацию
