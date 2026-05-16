@@ -1,10 +1,8 @@
-
-from sqlite3 import dbapi2
-
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 
+from app.models import WalletORM
 from app.repository.wallets import WalletsRepository
 from app.schemas import CreateWalletRequest
 
@@ -12,6 +10,11 @@ class WalletsService:
     def __init__(self, db: Session) -> None:
         self.db = db
         self.wallets_repository = WalletsRepository(db)
+
+
+    def get_all_wallets(self) -> list[WalletORM]:
+        walllets_orm =  self.wallets_repository.get_all()
+        return walllets_orm
 
     def get_wallet(self, wallet_name: str | None = None):
         # Если имя кошелька не указано - возвращаем общий баланс
@@ -48,6 +51,6 @@ class WalletsService:
             "balance:": wallet.balance
         }
 
-    def delete_wallet(self, wallet_id: int) -> str:
-        self.wallets_repository.delete(wallet_id=wallet_id)
-        return "Wallet deleted successfuly"
+    def delete_wallet(self, wallet_name: str) -> str:
+        self.wallets_repository.delete(wallet_name=wallet_name)
+        return f"Wallet {wallet_name} deleted successfuly"
