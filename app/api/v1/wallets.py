@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 
 from app.api.v1.dependencies import get_wallet_service
 from app.models import WalletORM
-from app.schemas import CreateWalletRequest
+from app.schemas import CreateWalletRequest, WalletUpdate
 from app.service.wallets import WalletsService
 
 router = APIRouter(prefix='/api/v1', tags=['wallet'])
@@ -14,7 +14,13 @@ def get_balance(wallets_service: WalletsService = Depends(get_wallet_service), w
 
 @router.get('')
 def get_all_wallets(wallets_service: WalletsService = Depends(get_wallet_service)):
-    return wallets_service.get_all_wallets()    
+    return wallets_service.get_all_wallets()
+
+@router.patch('/{wallet_name}')
+def rename_wallet(wallet_name: str, wallet_update: WalletUpdate, wallets_service: WalletsService = Depends(get_wallet_service)):
+    result = wallets_service.rename_wallet(name=wallet_name, wallet_update=wallet_update)
+    print(f"DEBUG router: {result=}")  # ← что здесь?
+    return result
 
 @router.post('/wallets')
 def create_wallet(wallet_data: CreateWalletRequest, wallets_service: WalletsService = Depends(get_wallet_service)):

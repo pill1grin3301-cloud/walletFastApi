@@ -1,4 +1,5 @@
 from decimal import Decimal
+from app.schemas import WalletUpdate
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import select
@@ -25,10 +26,6 @@ class WalletsRepository:
         wallet = self.db.query(WalletORM).filter(WalletORM.name == wallet_name).first()
         return wallet
     
-    # Возвращате список всех кошельков
-    def get_all(self) -> list[WalletORM]:
-        return self.db.scalars(select(WalletORM)).all()
-
     # Функция добавления трат
     def add_expense(self, wallet_name: str, amount: float) -> WalletORM:
         wallet = self.db.query(WalletORM).filter(WalletORM.name == wallet_name).first()
@@ -36,8 +33,8 @@ class WalletsRepository:
         self.db.commit()
         return wallet
 
-
-    def get_all_wallets(self) -> list[WalletORM]:
+    # Возвращате список всех кошельков
+    def get_all(self) -> list[WalletORM]:
         return self.db.query(WalletORM).all()
 
 
@@ -47,6 +44,13 @@ class WalletsRepository:
         self.db.commit()
         self.db.refresh(new_wallet)
         return new_wallet
+    
+    def update_wallet(self, wallet_name: str, wallet_update: WalletUpdate) -> WalletORM:
+        wallet = self.db.query(WalletORM).filter(WalletORM.name == wallet_name).first()
+        wallet.name = wallet_update.new_name
+        self.db.commit()    
+        self.db.refresh(wallet)
+        return wallet
 
     def delete(self, wallet_name: str) -> None:
         del_wallet = self.db.query(WalletORM).filter(WalletORM.name == wallet_name).first()

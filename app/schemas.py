@@ -24,6 +24,19 @@ class OperationRequest(BaseModel):
         return v
     
 
+class WalletUpdate(BaseModel):
+    new_name: str = Field(max_length=127)
+
+    @field_validator('new_name')
+    def mame_not_empty(cls, v:str) -> str:
+        # Убираем пробелы по краям
+        v = v.strip()
+        if not v:
+            raise ValueError('Name cannot be empty')
+
+        return v
+
+
 class CreateWalletRequest(BaseModel):
     name: str = Field(max_length=127)
     initial_balance: float = 0

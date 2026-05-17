@@ -1,10 +1,12 @@
+from os import name
+
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 
 from app.models import WalletORM
 from app.repository.wallets import WalletsRepository
-from app.schemas import CreateWalletRequest
+from app.schemas import CreateWalletRequest, WalletUpdate
 
 class WalletsService:
     def __init__(self, db: Session) -> None:
@@ -32,7 +34,33 @@ class WalletsService:
         # Возвращаем баланс конкретного кошелька
         wallet = self.wallets_repository.get_wallet_by_name(wallet_name=wallet_name)
         return {"wallet:": wallet.name, 'balance:': wallet.balance}
+    
 
+    def rename_wallet(self, name: str, wallet_update: WalletUpdate) -> WalletORM:
+        if not self.wallets_repository.is_wallet_exist(name):
+            raise HTTPException(
+                status_code=404, # Not exist this wallet
+                detail= f'Wallet {name} not found'
+            )
+        
+        if name == wallet_update.new_name:
+            raise HTTPException(
+                status_code=422,
+                detail= f"This Wallet already names {name}, please enter a new name"
+            )
+        
+        if self.wallets_repository.is_wallet_exist(wallet_update.new_name):
+            raise HTTPException(
+                status_code=409,  # Conflict
+                detail=f"Wallet with name '{wallet_update.new_name}' already exists"
+            )
+        
+
+        wallet = self.wallets_repository.update_wallet(wallet_name=name, wallet_update=wallet_update)
+        print(f"DEBUG: {wallet=}")  # ← что здесь?
+        print(f"DEBUG: {wallet.__dict__=}")  # ← показывает поля
+        return wallet
+    
 
     def create_wallet(self, wallet: CreateWalletRequest):
         # Если кошелек существует, нам нужна ошибка
