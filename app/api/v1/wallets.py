@@ -19,7 +19,6 @@ def get_all_wallets(wallets_service: WalletsService = Depends(get_wallet_service
 @router.patch('/{wallet_name}')
 def rename_wallet(wallet_name: str, wallet_update: WalletUpdate, wallets_service: WalletsService = Depends(get_wallet_service)):
     result = wallets_service.rename_wallet(name=wallet_name, wallet_update=wallet_update)
-    print(f"DEBUG router: {result=}")  # ← что здесь?
     return result
 
 @router.post('/wallets')
