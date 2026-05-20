@@ -18,7 +18,6 @@ class WalletsRepository:
     def add_income(self, wallet_name: str, amount: float) -> WalletORM:
         wallet = self.db.query(WalletORM).filter(WalletORM.name == wallet_name).first()
         wallet.balance += Decimal(amount)
-        self.db.commit()
         return wallet
 
     # Найти кошелек по имени
@@ -30,7 +29,6 @@ class WalletsRepository:
     def add_expense(self, wallet_name: str, amount: float) -> WalletORM:
         wallet = self.db.query(WalletORM).filter(WalletORM.name == wallet_name).first()
         wallet.balance -= Decimal(amount)
-        self.db.commit()
         return wallet
 
     # Возвращате список всех кошельков
@@ -40,16 +38,11 @@ class WalletsRepository:
 
     def create(self, wallet_name: str, amount: float) -> WalletORM:
         new_wallet = WalletORM(name=wallet_name, balance=amount)
-        self.db.add(new_wallet)
-        self.db.commit()
-        self.db.refresh(new_wallet)
         return new_wallet
     
     def update_wallet(self, wallet_name: str, wallet_update: WalletUpdate) -> WalletORM:
         wallet = self.db.query(WalletORM).filter(WalletORM.name == wallet_name).first()
         wallet.name = wallet_update.new_name
-        self.db.commit()    
-        self.db.refresh(wallet)
         return wallet
 
     def delete(self, wallet_name: str) -> None:
@@ -60,5 +53,4 @@ class WalletsRepository:
                 detail=f"Wallet {wallet_name} not found"
             )
         self.db.delete(del_wallet)
-        self.db.commit()
     

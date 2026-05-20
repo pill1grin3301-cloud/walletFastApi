@@ -21,7 +21,7 @@ class OperationService:
         
         # Добавляем доход к балансу кошелька
         wallet = self.wallets_repository.add_income(wallet_name=operation.wallet_name, amount=operation.amount)
-
+        self.db.commit()
         # Выводим информацию об операции
         return {
             'message': f'Income added',
@@ -51,7 +51,7 @@ class OperationService:
         
         # Вычитаем расход из баланса кошелька
         wallet = self.wallets_repository.add_expense(wallet_name=operation.wallet_name, amount=operation.amount)
-        
+        self.db.commit()
 
         # Возвращаем информацию
         return {

@@ -1,5 +1,3 @@
-from os import name
-
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
@@ -57,8 +55,8 @@ class WalletsService:
         
 
         wallet = self.wallets_repository.update_wallet(wallet_name=name, wallet_update=wallet_update)
-        print(f"DEBUG: {wallet=}")  # ← что здесь?
-        print(f"DEBUG: {wallet.__dict__=}")  # ← показывает поля
+        self.db.commit()    
+        self.db.refresh(wallet)
         return wallet
     
 
@@ -71,7 +69,9 @@ class WalletsService:
             )
         # Если не существует создаем 
         wallet = self.wallets_repository.create(wallet_name=wallet.name, amount=wallet.initial_balance)
-
+        self.db.add(wallet)
+        self.db.commit()
+        self.db.refresh(wallet)
         # Возвращаем информацию об операции
         return {
             "message:": f"Wallet {wallet.name} created",
@@ -81,4 +81,5 @@ class WalletsService:
 
     def delete_wallet(self, wallet_name: str) -> str:
         self.wallets_repository.delete(wallet_name=wallet_name)
+        self.db.commit()
         return f"Wallet {wallet_name} deleted successfuly"
