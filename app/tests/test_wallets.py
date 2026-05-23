@@ -2,12 +2,14 @@
 from fastapi import status
 
 def test_get_balance(client):
+    """Пытаемся получить баланс кошелька"""
     response = client.get('/api/v1/balance/')
     assert response.status_code == status.HTTP_200_OK
     assert isinstance(response.json(), dict)
 
 
 def test_get_all_wallets(client):
+    """Пытаемся получить список кошельков"""
     response = client.get('/api/v1/')
     assert response.status_code == status.HTTP_200_OK
     assert isinstance(response.json(), list)
@@ -32,6 +34,7 @@ def test_rename_wallet_to_name_already_exists(client, created_wallet):
 
 
 def test_create_wallet(client):
+    """Пытаемся создать кошелек - 201"""
     response = client.post(
         url='/api/v1/wallets', 
         json={'name': 'som name', 'initial_balance': 12}
@@ -40,6 +43,7 @@ def test_create_wallet(client):
 
 
 def test_create_wallet_without_name(client):
+    """Пытаемся создать кошелек с пустым именем - 422"""
     response = client.post(
         '/api/v1/wallets',
         json={'name': "", 'initial_balance': 198})
@@ -47,6 +51,7 @@ def test_create_wallet_without_name(client):
 
 
 def test_create_wallet_with_negative_balance(client):
+    """Пытаемся создать кошелек с отрицательным балансом - 422"""
     response = client.post(
         '/api/v1/wallets',
         json={'name': "qwert", 'initial_balance': -123})
@@ -54,6 +59,7 @@ def test_create_wallet_with_negative_balance(client):
 
 
 def test_create_wallet_with_long_name(client):
+    """Пытаемся создать кошелек с длинным именем - 422"""
     name = "zxc"*100
     response = client.post(
         '/api/v1/wallets',
@@ -61,10 +67,8 @@ def test_create_wallet_with_long_name(client):
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
-
-
-
 def test_delete_wallet(client, created_wallet):
+    """Пытаемся удалить кошелек 200 (особенность фронтенда), или 404"""
     wallet_name = created_wallet['wallet']
     response = client.delete(f'/api/v1/{wallet_name}')
     # happy path
