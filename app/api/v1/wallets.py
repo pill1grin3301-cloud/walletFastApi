@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
 
-from app.api.v1.dependencies import get_wallet_service
-from app.models import WalletORM
-from app.schemas import CreateWalletRequest, WalletUpdate
-from app.service.wallets import WalletsService
+from api.v1.dependencies import get_wallet_service
+from models import WalletORM
+from schemas import CreateWalletRequest, WalletUpdate
+from service.wallets import WalletsService
 
 router = APIRouter(prefix='/api/v1', tags=['wallet'])
 
@@ -21,7 +21,7 @@ def rename_wallet(wallet_name: str, wallet_update: WalletUpdate, wallets_service
     result = wallets_service.rename_wallet(name=wallet_name, wallet_update=wallet_update)
     return result
 
-@router.post('/wallets')
+@router.post('/wallets', status_code=status.HTTP_201_CREATED)
 def create_wallet(wallet_data: CreateWalletRequest, wallets_service: WalletsService = Depends(get_wallet_service)):
     return wallets_service.create_wallet(wallet=wallet_data)
 

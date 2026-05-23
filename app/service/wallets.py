@@ -1,10 +1,10 @@
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 
-from app.models import WalletORM
-from app.repository.wallets import WalletsRepository
-from app.schemas import CreateWalletRequest, WalletUpdate
+from models import WalletORM
+from repository.wallets import WalletsRepository
+from schemas import CreateWalletRequest, WalletUpdate
 
 class WalletsService:
     def __init__(self, db: Session) -> None:
@@ -16,10 +16,11 @@ class WalletsService:
         walllets_orm =  self.wallets_repository.get_all()
         return walllets_orm
 
+
     def get_wallet(self, wallet_name: str | None = None):
         # Если имя кошелька не указано - возвращаем общий баланс
         if wallet_name == None:
-            wallets = self.wallets_repository.get_all_wallets()
+            wallets = self.wallets_repository.get_all()
             return {'total_balance': sum([w.balance for w in wallets])}
         
         # Проверяем существует ли запрашиваемый кошелек
@@ -43,7 +44,7 @@ class WalletsService:
         
         if name == wallet_update.new_name:
             raise HTTPException(
-                status_code=422,
+                status_code=409,
                 detail= f"This Wallet already names {name}, please enter a new name"
             )
         
@@ -64,7 +65,7 @@ class WalletsService:
         # Если кошелек существует, нам нужна ошибка
         if self.wallets_repository.is_wallet_exist(wallet_name=wallet.name):
             raise HTTPException(
-                status_code=400,
+                status_code=status.HTTP_409_CONFLICT,
                 detail=f'Wallet {wallet.name} already exists'
             )
         # Если не существует создаем 
@@ -74,12 +75,13 @@ class WalletsService:
         self.db.refresh(wallet)
         # Возвращаем информацию об операции
         return {
-            "message:": f"Wallet {wallet.name} created",
-            "wallet:": wallet.name,
-            "balance:": wallet.balance
+            "message": f"Wallet {wallet.name} created",
+            "wallet": wallet.name,
+            "balance": wallet.balance
         }
+    
 
-    def delete_wallet(self, wallet_name: str) -> str:
+    def delete_wallet(self, wallet_name: str):
         self.wallets_repository.delete(wallet_name=wallet_name)
         self.db.commit()
         return f"Wallet {wallet_name} deleted successfuly"
