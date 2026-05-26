@@ -1,8 +1,8 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from repository.wallets import WalletsRepository
-from schemas import OperationRequest
+from app.repository.wallets import WalletsRepository
+from app.schemas import OperationRequest
 
 
 class OperationService:

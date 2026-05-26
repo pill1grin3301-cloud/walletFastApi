@@ -1,10 +1,10 @@
 from decimal import Decimal
-from schemas import WalletUpdate
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 
-from models import WalletORM
+from app.models import WalletORM
+from app.schemas import WalletUpdate
 
 class WalletsRepository:
     def __init__(self, db: Session):

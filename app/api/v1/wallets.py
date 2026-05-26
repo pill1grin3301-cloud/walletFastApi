@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, status
 
-from api.v1.dependencies import get_wallet_service
-from models import WalletORM
-from schemas import CreateWalletRequest, WalletUpdate
-from service.wallets import WalletsService
+from app.api.v1.dependencies import get_wallet_service
+from app.models import WalletORM
+from app.schemas import CreateWalletRequest, WalletUpdate
+from app.service.wallets import WalletsService
 
 router = APIRouter(prefix='/api/v1', tags=['wallet'])
 

@@ -3,7 +3,7 @@ from decimal import Decimal
 from uuid import uuid4
 
 from sqlalchemy.orm import Mapped, mapped_column
-from database import Base
+from app.database import Base
 
 
 class WalletORM(Base):

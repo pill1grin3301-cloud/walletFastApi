@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
-from api.v1.dependencies import get_operation_service
-from schemas import OperationRequest
-from service.operations import OperationService
+from app.api.v1.dependencies import get_operation_service
+from app.schemas import OperationRequest
+from app.service.operations import OperationService
 
 router = APIRouter(prefix='/api/v1/operations', tags=['operations'])
 

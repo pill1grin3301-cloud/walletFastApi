@@ -2,9 +2,9 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 
-from models import WalletORM
-from repository.wallets import WalletsRepository
-from schemas import CreateWalletRequest, WalletUpdate
+from app.models import WalletORM
+from app.repository.wallets import WalletsRepository
+from app.schemas import CreateWalletRequest, WalletUpdate
 
 class WalletsService:
     def __init__(self, db: Session) -> None:
