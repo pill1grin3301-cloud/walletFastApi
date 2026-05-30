@@ -24,7 +24,7 @@ app.include_router(router=operations_router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        'http://localhost:8080',   # порт, где открыт tester.html
+        'http://localhost:8080',   # порт, где открыт index.html
         'http://127.0.0.1:8080',
         'http://localhost:8000',
         'http://127.0.0.1:8000',

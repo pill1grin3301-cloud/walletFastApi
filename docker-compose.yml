@@ -33,6 +33,16 @@ services:
       DATABASE_URL: postgresql+psycopg://postgres:admin@wallet_db:5432/wallet
     working_dir: /app
 
+  frontend:
+    container_name: wallet_frontend
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+    depends_on:
+      - app
+
 # Тома (хранилища данных)
 volumes:
   pg_data_wallet:
