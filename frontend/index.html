@@ -33,6 +33,46 @@
             padding: 2px 6px;
             border-radius: 4px;
         }
+        .auth-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .auth-form {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+        .auth-form .field {
+            flex: 1;
+            min-width: 150px;
+        }
+        .auth-form label {
+            display: block;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+        .auth-form input {
+            margin: 0;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .user-info span {
+            color: #28a745;
+            font-weight: bold;
+        }
         .flex-row {
             display: flex;
             gap: 20px;
@@ -102,6 +142,19 @@
         button.get:hover {
             background: #1e7e34;
         }
+        button.secondary {
+            background: #6c757d;
+        }
+        button.secondary:hover {
+            background: #5a6268;
+        }
+        button.warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        button.warning:hover {
+            background: #e0a800;
+        }
         pre {
             background: #1e1e1e;
             color: #d4d4d4;
@@ -137,93 +190,121 @@
         hr {
             margin: 15px 0;
         }
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>💰 Wallet API Tester</h1>
         <div class="api-info">
-            🚀 Base URL: <code>http://localhost:8000/api/v1</code>
-            <button onclick="setBaseUrl()" style="margin-left: 10px; padding: 2px 8px; font-size: 12px;">Использовать localhost:8000</button>
+            🚀 API Base URL: <code>http://localhost:8000/api/v1</code><br>
+            🔐 Auth URL: <code>http://localhost:8000/auth</code>
         </div>
 
-        <div class="flex-row">
-            <!-- Левая панель: Кошельки -->
-            <div class="panel">
-                <h3>👛 Кошельки</h3>
-                
-                <div class="endpoint-group">
-                    <h4>📋 GET / (все кошельки)</h4>
-                    <button class="get" onclick="sendRequest('GET', '/')">Получить все</button>
-                </div>
-
-                <div class="endpoint-group">
-                    <h4>💰 GET /balance?wallet_name= (баланс)</h4>
-                    <input type="text" id="balanceName" placeholder="Имя кошелька (оставьте пустым для общего баланса)">
-                    <button class="get" onclick="getBalance()">Получить баланс</button>
-                </div>
-
-                <div class="endpoint-group">
-                    <h4>➕ POST /wallets (создать)</h4>
-                    <input type="text" id="createName" placeholder="Имя кошелька">
-                    <input type="number" id="createBalance" placeholder="Начальный баланс" value="0" step="0.01">
-                    <button onclick="createWallet()">Создать</button>
-                </div>
-
-                <div class="endpoint-group">
-                    <h4>✏️ PATCH /{wallet_name} (переименовать)</h4>
-                    <input type="text" id="oldName" placeholder="Текущее имя">
-                    <input type="text" id="newName" placeholder="Новое имя">
-                    <button onclick="renameWallet()">Переименовать</button>
-                </div>
-
-                <div class="endpoint-group">
-                    <h4>🗑️ DELETE /{wallet_name} (удалить)</h4>
-                    <input type="text" id="deleteName" placeholder="Имя кошелька">
-                    <button class="delete" onclick="deleteWallet()">Удалить</button>
-                </div>
-            </div>
-
-            <!-- Правая панель: Операции -->
-            <div class="panel">
-                <h3>📊 Операции</h3>
-
-                <div class="endpoint-group">
-                    <h4>📈 POST /operations/income (доход)</h4>
-                    <input type="text" id="incomeWallet" placeholder="Имя кошелька">
-                    <input type="number" id="incomeAmount" placeholder="Сумма" step="0.01">
-                    <input type="text" id="incomeDesc" placeholder="Описание (опционально)">
-                    <button class="get" onclick="addIncome()">➕ Добавить доход</button>
-                </div>
-
-                <div class="endpoint-group">
-                    <h4>📉 POST /operations/expense (расход)</h4>
-                    <input type="text" id="expenseWallet" placeholder="Имя кошелька">
-                    <input type="number" id="expenseAmount" placeholder="Сумма" step="0.01">
-                    <input type="text" id="expenseDesc" placeholder="Описание (опционально)">
-                    <button class="delete" onclick="addExpense()">➖ Списать расход</button>
-                </div>
-
-                <hr>
-
-                <div class="endpoint-group">
-                    <h4>🔧 Произвольный запрос</h4>
-                    <div style="display: flex; gap: 10px;">
-                        <select id="customMethod" style="width: 100px;">
-                            <option value="GET">GET</option>
-                            <option value="POST">POST</option>
-                            <option value="PATCH">PATCH</option>
-                            <option value="DELETE">DELETE</option>
-                        </select>
-                        <input type="text" id="customUrl" placeholder="/ или /wallets" style="flex: 1;">
+        <div class="auth-panel">
+            <div id="unauthPanel">
+                <div class="auth-form">
+                    <div class="field">
+                        <label>👤 Username</label>
+                        <input type="text" id="loginUsername" placeholder="username">
                     </div>
-                    <textarea id="customBody" rows="3" placeholder='{"name": "value"}'></textarea>
-                    <button onclick="sendCustom()">Отправить</button>
+                    <div class="field">
+                        <label>🔒 Password</label>
+                        <input type="password" id="loginPassword" placeholder="password">
+                    </div>
+                    <button onclick="register()">📝 Регистрация</button>
+                    <button onclick="login()">🔐 Вход</button>
+                </div>
+            </div>
+            <div id="authPanel" class="hidden">
+                <div class="user-info">
+                    <span>✅ Вы вошли как: <span id="currentUsername"></span></span>
+                    <div>
+                        <button class="warning" onclick="deleteAccount()">🗑️ Удалить аккаунт</button>
+                        <button class="secondary" onclick="logout()">🚪 Выйти</button>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Область ответа -->
+        <div id="mainContent" class="hidden">
+            <div class="flex-row">
+                <div class="panel">
+                    <h3>👛 Кошельки</h3>
+                    
+                    <div class="endpoint-group">
+                        <h4>📋 GET / (все кошельки)</h4>
+                        <button class="get" onclick="sendRequest('GET', '/')">Получить все</button>
+                    </div>
+
+                    <div class="endpoint-group">
+                        <h4>💰 GET /balance (баланс)</h4>
+                        <input type="text" id="balanceName" placeholder="Имя кошелька (оставьте пустым для общего баланса)">
+                        <button class="get" onclick="getBalance()">Получить баланс</button>
+                    </div>
+
+                    <div class="endpoint-group">
+                        <h4>➕ POST /wallets (создать)</h4>
+                        <input type="text" id="createName" placeholder="Имя кошелька">
+                        <input type="number" id="createBalance" placeholder="Начальный баланс" value="0" step="0.01">
+                        <button onclick="createWallet()">Создать</button>
+                    </div>
+
+                    <div class="endpoint-group">
+                        <h4>✏️ PATCH /{wallet_name} (переименовать)</h4>
+                        <input type="text" id="oldName" placeholder="Текущее имя">
+                        <input type="text" id="newName" placeholder="Новое имя">
+                        <button onclick="renameWallet()">Переименовать</button>
+                    </div>
+
+                    <div class="endpoint-group">
+                        <h4>🗑️ DELETE /{wallet_name} (удалить)</h4>
+                        <input type="text" id="deleteName" placeholder="Имя кошелька">
+                        <button class="delete" onclick="deleteWallet()">Удалить</button>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3>📊 Операции</h3>
+
+                    <div class="endpoint-group">
+                        <h4>📈 POST /operations/income (доход)</h4>
+                        <input type="text" id="incomeWallet" placeholder="Имя кошелька">
+                        <input type="number" id="incomeAmount" placeholder="Сумма" step="0.01">
+                        <input type="text" id="incomeDesc" placeholder="Описание (опционально)">
+                        <button class="get" onclick="addIncome()">➕ Добавить доход</button>
+                    </div>
+
+                    <div class="endpoint-group">
+                        <h4>📉 POST /operations/expense (расход)</h4>
+                        <input type="text" id="expenseWallet" placeholder="Имя кошелька">
+                        <input type="number" id="expenseAmount" placeholder="Сумма" step="0.01">
+                        <input type="text" id="expenseDesc" placeholder="Описание (опционально)">
+                        <button class="delete" onclick="addExpense()">➖ Списать расход</button>
+                    </div>
+
+                    <hr>
+
+                    <div class="endpoint-group">
+                        <h4>🔧 Произвольный запрос</h4>
+                        <div style="display: flex; gap: 10px;">
+                            <select id="customMethod" style="width: 100px;">
+                                <option value="GET">GET</option>
+                                <option value="POST">POST</option>
+                                <option value="PATCH">PATCH</option>
+                                <option value="DELETE">DELETE</option>
+                            </select>
+                            <input type="text" id="customUrl" placeholder="/wallets или /balance" style="flex: 1;">
+                        </div>
+                        <textarea id="customBody" rows="3" placeholder='{"name": "value"}'></textarea>
+                        <button onclick="sendCustom()">Отправить</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="panel">
             <h3>📬 Ответ сервера</h3>
             <div class="response-area">
@@ -237,19 +318,46 @@
     </div>
 
     <script>
-        const BASE_URL = 'http://localhost:8000/api/v1';
+        const API_BASE_URL = 'http://localhost:8000';
 
-        function setBaseUrl() {
-            document.querySelector('.api-info code').innerHTML = `http://localhost:8000/api/v1`;
-            alert('Base URL установлен: http://localhost:8000/api/v1');
+        function getToken() {
+            return localStorage.getItem('access_token');
+        }
+
+        function getCurrentUser() {
+            return localStorage.getItem('username');
+        }
+
+        function initUI() {
+            const token = getToken();
+            const username = getCurrentUser();
+            
+            if (token && username) {
+                document.getElementById('unauthPanel').classList.add('hidden');
+                document.getElementById('authPanel').classList.remove('hidden');
+                document.getElementById('mainContent').classList.remove('hidden');
+                document.getElementById('currentUsername').textContent = username;
+            } else {
+                document.getElementById('unauthPanel').classList.remove('hidden');
+                document.getElementById('authPanel').classList.add('hidden');
+                document.getElementById('mainContent').classList.add('hidden');
+            }
         }
 
         async function sendRequest(method, endpoint, body = null) {
-            const url = `${BASE_URL}${endpoint}`;
+            const token = getToken();
+            
+            if (!token) {
+                alert('Сначала выполните вход');
+                return;
+            }
+
+            const url = `${API_BASE_URL}/api/v1${endpoint}`;
             const options = {
                 method: method,
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
                 }
             };
             if (body) {
@@ -260,11 +368,16 @@
             const responsePre = document.getElementById('response');
             
             statusSpan.textContent = '⏳ Загрузка...';
-            statusSpan.className = '';
             responsePre.textContent = 'Отправка запроса...';
 
             try {
                 const response = await fetch(url, options);
+                
+                if (response.status === 401) {
+                    logout();
+                    throw new Error('Сессия истекла, выполните вход заново');
+                }
+                
                 const statusClass = response.ok ? 'status-ok' : 'status-error';
                 statusSpan.innerHTML = `${response.status} ${response.statusText}`;
                 statusSpan.className = `status-badge ${statusClass}`;
@@ -282,9 +395,115 @@
             } catch (error) {
                 statusSpan.innerHTML = '❌ Ошибка';
                 statusSpan.className = 'status-badge status-error';
-                responsePre.textContent = `Ошибка: ${error.message}\n\nПроверьте, запущен ли сервер на ${BASE_URL}`;
+                responsePre.textContent = `Ошибка: ${error.message}`;
                 console.error('Request failed:', error);
             }
+        }
+
+        // Аутентификация
+        async function register() {
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!username || !password) {
+                alert('Введите username и password');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    localStorage.setItem('access_token', data.access_token);
+                    localStorage.setItem('username', username);
+                    initUI();
+                    alert('Регистрация успешна!');
+                } else {
+                    alert(`Ошибка: ${data.detail || 'Неизвестная ошибка'}`);
+                }
+            } catch (error) {
+                alert(`Ошибка: ${error.message}`);
+            }
+        }
+
+        async function login() {
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!username || !password) {
+                alert('Введите username и password');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/login?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    localStorage.setItem('access_token', data.access_token);
+                    localStorage.setItem('username', username);
+                    initUI();
+                    alert('Вход выполнен!');
+                } else {
+                    alert(`Ошибка: ${data.detail || 'Неверные учетные данные'}`);
+                }
+            } catch (error) {
+                alert(`Ошибка: ${error.message}`);
+            }
+        }
+
+        // Удаление аккаунта
+        async function deleteAccount() {
+            const token = getToken();
+            const username = getCurrentUser();
+            
+            if (!token || !username) {
+                alert('Сначала выполните вход');
+                return;
+            }
+            
+            if (!confirm(`Вы уверены, что хотите удалить аккаунт "${username}"? Все кошельки и операции будут удалены безвозвратно!`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/delete`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    alert('Аккаунт успешно удалён');
+                    logout();
+                } else {
+                    const data = await response.json();
+                    alert(`Ошибка: ${data.detail || 'Не удалось удалить аккаунт'}`);
+                }
+            } catch (error) {
+                alert(`Ошибка: ${error.message}`);
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('username');
+            initUI();
+            document.getElementById('loginUsername').value = '';
+            document.getElementById('loginPassword').value = '';
+            clearResponse();
         }
 
         // Кошельки
@@ -362,7 +581,6 @@
             sendRequest('POST', '/operations/expense', body);
         }
 
-        // Произвольный запрос
         function sendCustom() {
             const method = document.getElementById('customMethod').value;
             let url = document.getElementById('customUrl').value;
@@ -388,13 +606,16 @@
             document.getElementById('response').textContent = 'готов к запросам...';
         }
 
-        // Enter для быстрого ввода
         document.querySelectorAll('input').forEach(input => {
             input.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     const id = input.id;
-                    if (id.includes('balance')) getBalance();
+                    if (id === 'loginUsername' || id === 'loginPassword') {
+                        if (document.getElementById('loginUsername').value && document.getElementById('loginPassword').value) {
+                            login();
+                        }
+                    } else if (id.includes('balance')) getBalance();
                     else if (id.includes('create')) createWallet();
                     else if (id.includes('oldName') || id.includes('newName')) renameWallet();
                     else if (id.includes('deleteName')) deleteWallet();
@@ -403,6 +624,8 @@
                 }
             });
         });
+
+        initUI();
     </script>
 </body>
 </html>
