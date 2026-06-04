@@ -1,12 +1,12 @@
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.orm import Session
 
-from main import app
-from database import Base, get_db
+from app.main import app
+from app.database import Base, get_db
 
-TEST_DATABASE_URL = "postgresql+psycopg://postgres:admin@127.0.0.1:5432/test_db"
+TEST_DATABASE_URL = "postgresql+psycopg://postgres:admin@test_db:5432/test_db"
 
 # Создаём engine для тестов
 test_engine = create_engine(TEST_DATABASE_URL, connect_args={"connect_timeout": 10})
@@ -45,9 +45,56 @@ def client(db_session):
     return TestClient(app)
 
 @pytest.fixture
-def created_wallet(client):
-    response = client.post('/api/v1/wallets', json={
+def created_wallet(auth_client):
+    response = auth_client.post('/api/v1/wallets', json={
         'name': 'unique_name',
         'initial_balance': 100
     })
     return response.json()
+
+@pytest.fixture
+def test_user(client):
+    """Создаёт тестового пользователя и возвращает токен"""
+    username = "testuser"
+    password = "testpass"
+    
+    # Регистрация
+    client.post("/auth/register", json={"username": username, "password": password})
+    
+    # Логин
+    response = client.post(f"/auth/login?username={username}&password={password}")
+    token = response.json()["access_token"]
+
+    from jose import jwt
+    from app.service.auth import SECRET_KEY, ALGORITHM
+    payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    user_id = payload.get("sub")
+    
+    return {"username": username, "token": token, "id": user_id}
+
+@pytest.fixture
+def auth_client(test_user):
+    """Клиент с авторизацией"""
+    client = TestClient(app)
+    client.headers = {"Authorization": f"Bearer {test_user['token']}"}
+    return client
+
+@pytest.fixture
+def second_user_client(second_user):
+    """Клиент с авторизацией второго пользователя"""
+    client = TestClient(app)  # ← новый клиент!
+    client.headers = {"Authorization": f"Bearer {second_user['token']}"}
+    return client
+
+
+@pytest.fixture
+def second_user(client):
+    """Создаёт второго пользователя и возвращает токен"""
+    username = "rofl"
+    password = "nerofl"
+    
+    client.post("/auth/register", json={"username": username, "password": password})
+    response = client.post(f"/auth/login?username={username}&password={password}")
+    token = response.json()["access_token"]
+    
+    return {"username": username, "token": token}

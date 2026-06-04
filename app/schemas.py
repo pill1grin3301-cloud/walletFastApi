@@ -1,4 +1,6 @@
+from click import File
 from pydantic import BaseModel, Field, field_validator
+from sqlalchemy.orm import Mapped
 
 
 class OperationRequest(BaseModel):
@@ -57,3 +59,17 @@ class CreateWalletRequest(BaseModel):
             raise ValueError('Balance cannot be negative')
         # Возвращаем значение если все ок
         return v
+    
+    
+class UserCreate(BaseModel):
+    username: str = Field(max_length=42)
+    password: str = Field(min_length=3)
+
+class UserResponse(BaseModel):
+    id: int
+    username: str = Field(max_length=42)
+    is_active: bool
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str = "bearer"

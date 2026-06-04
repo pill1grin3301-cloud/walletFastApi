@@ -34,4 +34,7 @@ htmlcov/
 # mypy
 .mypy_cache/
 
+#other
+frontend/without_auth.html
+
 

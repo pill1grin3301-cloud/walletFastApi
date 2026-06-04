@@ -4,7 +4,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1.operations import router as operations_router
 from app.api.v1.wallets import router as wallets_router
+from app.api.v1.auth import router as auth_router
 from app.database import Base, engine
+
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
@@ -17,10 +19,12 @@ async def lifespan(_: FastAPI):
 # инициализируем fastapi приложение
 app = FastAPI(lifespan=lifespan)
 
-
+# подключаем роуты
 app.include_router(router=wallets_router)
 app.include_router(router=operations_router)
+app.include_router(router=auth_router)
 
+# даем доступ фронтенду
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -31,6 +35,7 @@ app.add_middleware(
     ],
     allow_methods=['*'],
     allow_headers=['*'],
+    allow_credentials=True
 )
 
 

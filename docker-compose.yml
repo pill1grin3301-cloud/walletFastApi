@@ -9,7 +9,7 @@ services:
       POSTGRES_PASSWORD: admin
       POSTGRES_DB: wallet
     ports:
-      - "5433:5432"             # хост:контейнер
+      - "5433:5432"             # второй порт не трогать
     volumes:
       - pg_data_wallet:/var/lib/postgresql  # сохраняем данные
 
@@ -20,24 +20,35 @@ services:
       timeout: 12s       # Таймаут проверки
       retries: 4        # Количество попыток
 
+  test_db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: test_db
+    ports:
+      - "5434:5432"  # ← другой порт
+
   # Второй сервис: твоё приложение
   app:
     container_name: app_wallet
     build: .                    # собирать образ из текущей папки (Dockerfile)
     ports:
-      - "8000:8000"
+      - "8000:8000" # второй порт не трогать
     depends_on:                 # ждём, пока db запустится
         db:
           condition: service_healthy
     environment:
       DATABASE_URL: postgresql+psycopg://postgres:admin@wallet_db:5432/wallet
     working_dir: /app
+    env_file:
+      - .env
 
   frontend:
     container_name: wallet_frontend
     image: nginx:alpine
     ports:
-      - "8080:80"
+      - "8080:80" # второй порт не трогать
     volumes:
       - ./frontend:/usr/share/nginx/html:ro
     depends_on:
