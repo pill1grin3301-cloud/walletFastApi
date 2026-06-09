@@ -27,8 +27,8 @@ def notify_new_wallet(username: str, wallet_name: str) -> None:
     _send(f"Пользователь {username} создал кошелек {wallet_name}")
 
 
-def notify_new_expense(username: str, wallet_name: str, amount: str) -> None:
+def notify_new_expense(username: str, wallet_name: str, amount: int | float) -> None:
     _send(f"Пользователь {username} потратил {amount} с кошелька {wallet_name} ")
 
-def notify_new_income(username: str, wallet_name: str, amount: str) -> None:
+def notify_new_income(username: str, wallet_name: str, amount: int | float) -> None:
     _send(f"Пользователь {username} получил {amount} на счет {wallet_name}")
