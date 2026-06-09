@@ -3,6 +3,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     SECRET_KEY: str
     ALGORITHM: str = "HS256"
+    TELEGRAM_TOKEN: str | None = None
+    ADMIN_TELEGRAM_CHAT_ID: int | None = None
 
     model_config = SettingsConfigDict(
         env_file=".env",

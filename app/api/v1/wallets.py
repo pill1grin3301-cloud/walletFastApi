@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, status
 
 from app.api.v1.dependencies import get_current_user, get_wallet_service
-from app.models import WalletORM
 from app.schemas import CreateWalletRequest, WalletUpdate
 from app.service.wallets import WalletsService
 

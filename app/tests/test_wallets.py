@@ -1,6 +1,5 @@
-
 from fastapi import status
-from rsa import cli
+
 
 def test_get_balance(auth_client):
     """Пытаемся получить баланс кошелька"""
@@ -37,10 +36,11 @@ def test_rename_wallet_to_name_already_exists(auth_client, created_wallet):
 def test_create_wallet(auth_client):
     """Пытаемся создать кошелек - 201"""
     response = auth_client.post(
-        url='/api/v1/wallets', 
-        json={'name': 'som name', 'initial_balance': 12}
+        url='/api/v1/wallets',
+        json={'name': 'som name', 'initial_balance': 12},
     )
     assert response.status_code == status.HTTP_201_CREATED
+    assert response.json()["wallet"] == "som name"
 
 
 def test_create_wallet_without_name(auth_client):
@@ -92,12 +92,6 @@ def test_get_wallets_with_token(auth_client):
     response = auth_client.get("/api/v1/")
     assert response.status_code == 200
     assert isinstance(response.json(), list)
-
-
-def test_create_wallet(auth_client):
-    response = auth_client.post("/api/v1/wallets", json={"name": "my_wallet", "initial_balance": 100})
-    assert response.status_code == 201
-    assert response.json()["wallet"] == "my_wallet"
 
 def test_create_wallet_without_token(client):
     response = client.post("/api/v1/wallets", json={"name": "my_wallet", "initial_balance": 100})

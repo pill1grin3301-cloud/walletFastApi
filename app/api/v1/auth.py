@@ -20,3 +20,4 @@ def login(username: str, password: str, auth = Depends(get_auth_service)):
 @router.delete("/delete", status_code=status.HTTP_204_NO_CONTENT)
 def delete(current_user: UserORM = Depends(get_current_user), auth = Depends(get_auth_service)):
     auth.delete_user(current_user.id)
+

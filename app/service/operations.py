@@ -1,8 +1,11 @@
+
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.repository.wallets import WalletsRepository
 from app.schemas import OperationRequest
+from app.models import UserORM
+from app.service.telegram_notify import notify_new_expense, notify_new_income
 
 
 class OperationService:
@@ -10,7 +13,7 @@ class OperationService:
         self.db = db
         self.wallets_repository = WalletsRepository(db=db)
 
-    def add_income(self, operation: OperationRequest, current_user) -> dict:
+    def add_income(self, operation: OperationRequest, current_user: UserORM) -> dict:
         # Проверяем существует ли кошелек у пользователя
         if not self.wallets_repository.is_wallet_exist(operation.wallet_name, current_user.id):
             raise HTTPException(
@@ -21,6 +24,11 @@ class OperationService:
         # Добавляем доход к балансу кошелька
         wallet = self.wallets_repository.add_income(operation.wallet_name, operation.amount, current_user.id)
         self.db.commit()
+        notify_new_income(
+            username=current_user.username, 
+            wallet_name=operation.wallet_name, 
+            amount=operation.amount
+        )
 
         return {
             'message': 'Income added',
@@ -31,7 +39,7 @@ class OperationService:
         }
     
 
-    def add_expense(self, operation: OperationRequest, current_user) -> dict:
+    def add_expense(self, operation: OperationRequest, current_user: UserORM) -> dict:
         # Проверяем существует ли кошелек у пользователя
         if not self.wallets_repository.is_wallet_exist(operation.wallet_name, current_user.id):
             raise HTTPException(
@@ -50,6 +58,11 @@ class OperationService:
         # Вычитаем расход из баланса кошелька
         wallet = self.wallets_repository.add_expense(operation.wallet_name, operation.amount, current_user.id)
         self.db.commit()
+        notify_new_expense(
+            username=current_user.username, 
+            wallet_name=operation.wallet_name, 
+            amount=operation.amount
+        )
 
         return {
             'message': 'Expense added',

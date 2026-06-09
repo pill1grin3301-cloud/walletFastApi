@@ -7,6 +7,7 @@ from datetime import datetime, timedelta, timezone
 from app.models import UserORM
 from app.schemas import UserCreate
 from app.core.config import settings
+from app.service.telegram_notify import notify_new_user
 
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 SECRET_KEY = settings.SECRET_KEY
@@ -35,6 +36,7 @@ class AuthService:
         self.db.add(user)
         self.db.commit()
         self.db.refresh(user)
+        notify_new_user(user.username)
         return user
     
     def login(self, username: str, password: str) -> str:
@@ -63,9 +65,10 @@ class AuthService:
         return user
     
 
-    def delete_user(self, user_id: str) -> UserORM:
+    def delete_user(self, user_id: str):
         user = self.db.query(UserORM).filter(UserORM.id == user_id).first()
+        if not user:
+            raise HTTPException(404, "User not found")
         self.db.delete(user)
         self.db.commit()
-        
         

@@ -3,6 +3,7 @@ services:
   # Первый сервис: база данных
   db:
     container_name: wallet_db
+    restart: unless-stopped
     image: postgres:16          # готовый образ из Docker Hub
     environment:                # переменные окружения
       POSTGRES_USER: postgres
@@ -11,7 +12,7 @@ services:
     ports:
       - "5433:5432"             # второй порт не трогать
     volumes:
-      - pg_data_wallet:/var/lib/postgresql  # сохраняем данные
+      - pg_data_wallet:/var/lib/postgresql/data
 
     # Проверка здоровья (ждём, пока БД реально запустится)
     healthcheck:
@@ -32,6 +33,7 @@ services:
   # Второй сервис: твоё приложение
   app:
     container_name: app_wallet
+    restart: unless-stopped
     build: .                    # собирать образ из текущей папки (Dockerfile)
     ports:
       - "8000:8000" # второй порт не трогать
@@ -44,8 +46,19 @@ services:
     env_file:
       - .env
 
+  bot:
+    build: .
+    container_name: wallet_bot
+    restart: unless-stopped
+    command: python -m bot.main
+    depends_on:
+      - db
+    env_file:
+      - .env
+
   frontend:
     container_name: wallet_frontend
+    restart: unless-stopped
     image: nginx:alpine
     ports:
       - "8080:80" # второй порт не трогать

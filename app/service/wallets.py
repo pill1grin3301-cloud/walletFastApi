@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.models import WalletORM
 from app.repository.wallets import WalletsRepository
 from app.schemas import CreateWalletRequest, WalletUpdate
+from app.service.telegram_notify import notify_new_wallet
 
 
 class WalletsService:
@@ -69,7 +70,8 @@ class WalletsService:
         self.db.add(new_wallet)
         self.db.commit()
         self.db.refresh(new_wallet)
-        
+        notify_new_wallet(current_user.username, new_wallet.name)
+
         return {
             "message": f"Wallet {new_wallet.name} created",
             "wallet": new_wallet.name,

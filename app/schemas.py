@@ -1,6 +1,4 @@
-from click import File
 from pydantic import BaseModel, Field, field_validator
-from sqlalchemy.orm import Mapped
 
 
 class OperationRequest(BaseModel):
@@ -66,7 +64,7 @@ class UserCreate(BaseModel):
     password: str = Field(min_length=3)
 
 class UserResponse(BaseModel):
-    id: int
+    id: str
     username: str = Field(max_length=42)
     is_active: bool
 

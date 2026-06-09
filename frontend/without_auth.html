@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallet API Tester</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #1a73e8;
+            margin-bottom: 20px;
+        }
+        .api-info {
+            background: #e8f0fe;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .api-info code {
+            background: #fff;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .flex-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .panel {
+            flex: 1;
+            min-width: 300px;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .panel h3 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #1a73e8;
+            padding-bottom: 8px;
+        }
+        .endpoint-group {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .endpoint-group h4 {
+            margin: 0 0 10px 0;
+            color: #666;
+            font-size: 14px;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px 12px;
+            margin: 5px 0 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        textarea {
+            font-family: monospace;
+            resize: vertical;
+        }
+        button {
+            background: #1a73e8;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 8px;
+            margin-bottom: 5px;
+        }
+        button:hover {
+            background: #1557b0;
+        }
+        button.delete {
+            background: #dc3545;
+        }
+        button.delete:hover {
+            background: #b02a37;
+        }
+        button.get {
+            background: #28a745;
+        }
+        button.get:hover {
+            background: #1e7e34;
+        }
+        pre {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 12px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 12px;
+            font-family: monospace;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .status-ok {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .response-area {
+            margin-top: 15px;
+        }
+        .response-area h4 {
+            margin: 0 0 5px 0;
+            font-size: 14px;
+        }
+        hr {
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💰 Wallet API Tester</h1>
+        <div class="api-info">
+            🚀 Base URL: <code>http://localhost:8000/api/v1</code>
+            <button onclick="setBaseUrl()" style="margin-left: 10px; padding: 2px 8px; font-size: 12px;">Использовать localhost:8000</button>
+        </div>
+
+        <div class="flex-row">
+            <!-- Левая панель: Кошельки -->
+            <div class="panel">
+                <h3>👛 Кошельки</h3>
+                
+                <div class="endpoint-group">
+                    <h4>📋 GET / (все кошельки)</h4>
+                    <button class="get" onclick="sendRequest('GET', '/')">Получить все</button>
+                </div>
+
+                <div class="endpoint-group">
+                    <h4>💰 GET /balance?wallet_name= (баланс)</h4>
+                    <input type="text" id="balanceName" placeholder="Имя кошелька (оставьте пустым для общего баланса)">
+                    <button class="get" onclick="getBalance()">Получить баланс</button>
+                </div>
+
+                <div class="endpoint-group">
+                    <h4>➕ POST /wallets (создать)</h4>
+                    <input type="text" id="createName" placeholder="Имя кошелька">
+                    <input type="number" id="createBalance" placeholder="Начальный баланс" value="0" step="0.01">
+                    <button onclick="createWallet()">Создать</button>
+                </div>
+
+                <div class="endpoint-group">
+                    <h4>✏️ PATCH /{wallet_name} (переименовать)</h4>
+                    <input type="text" id="oldName" placeholder="Текущее имя">
+                    <input type="text" id="newName" placeholder="Новое имя">
+                    <button onclick="renameWallet()">Переименовать</button>
+                </div>
+
+                <div class="endpoint-group">
+                    <h4>🗑️ DELETE /{wallet_name} (удалить)</h4>
+                    <input type="text" id="deleteName" placeholder="Имя кошелька">
+                    <button class="delete" onclick="deleteWallet()">Удалить</button>
+                </div>
+            </div>
+
+            <!-- Правая панель: Операции -->
+            <div class="panel">
+                <h3>📊 Операции</h3>
+
+                <div class="endpoint-group">
+                    <h4>📈 POST /operations/income (доход)</h4>
+                    <input type="text" id="incomeWallet" placeholder="Имя кошелька">
+                    <input type="number" id="incomeAmount" placeholder="Сумма" step="0.01">
+                    <input type="text" id="incomeDesc" placeholder="Описание (опционально)">
+                    <button class="get" onclick="addIncome()">➕ Добавить доход</button>
+                </div>
+
+                <div class="endpoint-group">
+                    <h4>📉 POST /operations/expense (расход)</h4>
+                    <input type="text" id="expenseWallet" placeholder="Имя кошелька">
+                    <input type="number" id="expenseAmount" placeholder="Сумма" step="0.01">
+                    <input type="text" id="expenseDesc" placeholder="Описание (опционально)">
+                    <button class="delete" onclick="addExpense()">➖ Списать расход</button>
+                </div>
+
+                <hr>
+
+                <div class="endpoint-group">
+                    <h4>🔧 Произвольный запрос</h4>
+                    <div style="display: flex; gap: 10px;">
+                        <select id="customMethod" style="width: 100px;">
+                            <option value="GET">GET</option>
+                            <option value="POST">POST</option>
+                            <option value="PATCH">PATCH</option>
+                            <option value="DELETE">DELETE</option>
+                        </select>
+                        <input type="text" id="customUrl" placeholder="/ или /wallets" style="flex: 1;">
+                    </div>
+                    <textarea id="customBody" rows="3" placeholder='{"name": "value"}'></textarea>
+                    <button onclick="sendCustom()">Отправить</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Область ответа -->
+        <div class="panel">
+            <h3>📬 Ответ сервера</h3>
+            <div class="response-area">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h4>Статус: <span id="statusCode">—</span></h4>
+                    <button onclick="clearResponse()" style="padding: 2px 8px; font-size: 12px;">Очистить</button>
+                </div>
+                <pre id="response">готов к запросам...</pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const BASE_URL = 'http://localhost:8000/api/v1';
+
+        function setBaseUrl() {
+            document.querySelector('.api-info code').innerHTML = `http://localhost:8000/api/v1`;
+            alert('Base URL установлен: http://localhost:8000/api/v1');
+        }
+
+        async function sendRequest(method, endpoint, body = null) {
+            const url = `${BASE_URL}${endpoint}`;
+            const options = {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            };
+            if (body) {
+                options.body = JSON.stringify(body);
+            }
+
+            const statusSpan = document.getElementById('statusCode');
+            const responsePre = document.getElementById('response');
+            
+            statusSpan.textContent = '⏳ Загрузка...';
+            statusSpan.className = '';
+            responsePre.textContent = 'Отправка запроса...';
+
+            try {
+                const response = await fetch(url, options);
+                const statusClass = response.ok ? 'status-ok' : 'status-error';
+                statusSpan.innerHTML = `${response.status} ${response.statusText}`;
+                statusSpan.className = `status-badge ${statusClass}`;
+                
+                let data;
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    data = await response.json();
+                    responsePre.textContent = JSON.stringify(data, null, 2);
+                } else {
+                    data = await response.text();
+                    responsePre.textContent = data || '(пустой ответ)';
+                }
+                return data;
+            } catch (error) {
+                statusSpan.innerHTML = '❌ Ошибка';
+                statusSpan.className = 'status-badge status-error';
+                responsePre.textContent = `Ошибка: ${error.message}\n\nПроверьте, запущен ли сервер на ${BASE_URL}`;
+                console.error('Request failed:', error);
+            }
+        }
+
+        // Кошельки
+        function getBalance() {
+            const name = document.getElementById('balanceName').value;
+            const endpoint = name ? `/balance?wallet_name=${encodeURIComponent(name)}` : '/balance';
+            sendRequest('GET', endpoint);
+        }
+
+        function createWallet() {
+            const name = document.getElementById('createName').value.trim();
+            const balance = parseFloat(document.getElementById('createBalance').value);
+            
+            if (!name) {
+                alert('Введите имя кошелька');
+                return;
+            }
+            
+            sendRequest('POST', '/wallets', { name, initial_balance: balance });
+        }
+
+        function renameWallet() {
+            const oldName = document.getElementById('oldName').value.trim();
+            const newName = document.getElementById('newName').value.trim();
+            
+            if (!oldName || !newName) {
+                alert('Введите текущее и новое имя');
+                return;
+            }
+            
+            sendRequest('PATCH', `/${encodeURIComponent(oldName)}`, { new_name: newName });
+        }
+
+        function deleteWallet() {
+            const name = document.getElementById('deleteName').value.trim();
+            if (!name) {
+                alert('Введите имя кошелька');
+                return;
+            }
+            if (confirm(`Удалить кошелек "${name}"?`)) {
+                sendRequest('DELETE', `/${encodeURIComponent(name)}`);
+            }
+        }
+
+        // Операции
+        function addIncome() {
+            const walletName = document.getElementById('incomeWallet').value.trim();
+            const amount = parseFloat(document.getElementById('incomeAmount').value);
+            const description = document.getElementById('incomeDesc').value.trim();
+            
+            if (!walletName || isNaN(amount)) {
+                alert('Введите имя кошелька и сумму');
+                return;
+            }
+            
+            const body = { wallet_name: walletName, amount: amount };
+            if (description) body.description = description;
+            
+            sendRequest('POST', '/operations/income', body);
+        }
+
+        function addExpense() {
+            const walletName = document.getElementById('expenseWallet').value.trim();
+            const amount = parseFloat(document.getElementById('expenseAmount').value);
+            const description = document.getElementById('expenseDesc').value.trim();
+            
+            if (!walletName || isNaN(amount)) {
+                alert('Введите имя кошелька и сумму');
+                return;
+            }
+            
+            const body = { wallet_name: walletName, amount: amount };
+            if (description) body.description = description;
+            
+            sendRequest('POST', '/operations/expense', body);
+        }
+
+        // Произвольный запрос
+        function sendCustom() {
+            const method = document.getElementById('customMethod').value;
+            let url = document.getElementById('customUrl').value;
+            if (!url.startsWith('/')) {
+                url = '/' + url;
+            }
+            let body = null;
+            const bodyText = document.getElementById('customBody').value.trim();
+            if (bodyText) {
+                try {
+                    body = JSON.parse(bodyText);
+                } catch (e) {
+                    alert('Невалидный JSON в теле запроса');
+                    return;
+                }
+            }
+            sendRequest(method, url, body);
+        }
+
+        function clearResponse() {
+            document.getElementById('statusCode').innerHTML = '—';
+            document.getElementById('statusCode').className = '';
+            document.getElementById('response').textContent = 'готов к запросам...';
+        }
+
+        // Enter для быстрого ввода
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const id = input.id;
+                    if (id.includes('balance')) getBalance();
+                    else if (id.includes('create')) createWallet();
+                    else if (id.includes('oldName') || id.includes('newName')) renameWallet();
+                    else if (id.includes('deleteName')) deleteWallet();
+                    else if (id.includes('income')) addIncome();
+                    else if (id.includes('expense')) addExpense();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -3,11 +3,10 @@ from sqlalchemy.orm import Session
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from app.database import get_db
+from app.models import UserORM
+from app.service.auth import AuthService
 from app.service.operations import OperationService
 from app.service.wallets import WalletsService
-from app.models import UserORM
-from app.database import get_db
-from app.service.auth import AuthService
 
 
 
