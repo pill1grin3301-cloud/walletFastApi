@@ -1,18 +1,35 @@
 import os
 from logging.config import fileConfig
+from pathlib import Path
 
+from dotenv import load_dotenv
 from sqlalchemy import engine_from_config, pool
+
 from alembic import context
 
-from app.database import Base
-from app.models import UserORM, WalletORM  # noqa: F401
+# .env must load before app.database (it requires DATABASE_URL at import)
+load_dotenv(Path(__file__).resolve().parents[1] / ".env")
+
+
+def resolve_alembic_database_url() -> str:
+    url = os.getenv("ALEMBIC_DATABASE_URL") or os.getenv("DATABASE_URL")
+    if not url:
+        raise RuntimeError(
+            "DATABASE_URL must be set. Copy .env_example to .env or export DATABASE_URL."
+        )
+    # wallet_db resolves only inside docker; from host use published port 5433
+    if "@wallet_db:" in url:
+        url = url.replace("@wallet_db:5432", "@localhost:5433")
+    return url
+
+
+database_url = resolve_alembic_database_url()
+os.environ["DATABASE_URL"] = database_url
+
+from app.database import Base  # noqa: E402
+from app.models import OperationORM, UserORM, WalletORM  # noqa: E402, F401
 
 config = context.config
-
-database_url = os.getenv("DATABASE_URL")
-if not database_url:
-    raise RuntimeError("DATABASE_URL must be set to run Alembic migrations")
-
 config.set_main_option("sqlalchemy.url", database_url)
 
 if config.config_file_name is not None:
