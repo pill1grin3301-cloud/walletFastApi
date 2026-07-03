@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.models import WalletORM
 from app.repository.wallets import WalletsRepository
 from app.schemas import CreateWalletRequest, WalletUpdate
-from app.service.telegram_notify import notify_new_wallet
+from app.service.telegram_notify import notify_del_wallet, notify_new_wallet
 
 
 class WalletsService:
@@ -81,4 +81,5 @@ class WalletsService:
     def delete_wallet(self, wallet_name: str, current_user):
         self.wallets_repository.delete(wallet_name, current_user.id)
         self.db.commit()
+        notify_del_wallet(username=current_user.username, wallet_name=wallet_name)
         return f"Wallet {wallet_name} deleted successfully"

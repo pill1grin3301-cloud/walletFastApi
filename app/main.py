@@ -5,12 +5,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.operations import router as operations_router
 from app.api.v1.wallets import router as wallets_router
 from app.api.v1.auth import router as auth_router
-from app.database import Base, engine
-
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    Base.metadata.create_all(bind=engine)
     print('app start')
     yield
     print('app finished')

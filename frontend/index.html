@@ -3,497 +3,753 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wallet API Tester</title>
+    <title>Wallet — личные финансы</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; }
+        :root {
+            --bg: #0c1222;
+            --bg-soft: #111827;
+            --surface: rgba(255, 255, 255, 0.06);
+            --surface-hover: rgba(255, 255, 255, 0.09);
+            --border: rgba(255, 255, 255, 0.1);
+            --text: #f1f5f9;
+            --text-muted: #94a3b8;
+            --accent: #34d399;
+            --accent-dim: rgba(52, 211, 153, 0.15);
+            --danger: #f87171;
+            --danger-dim: rgba(248, 113, 113, 0.15);
+            --warning: #fbbf24;
+            --primary: #60a5fa;
+            --shadow: 0 24px 48px rgba(0, 0, 0, 0.35);
+            --radius: 16px;
+            --radius-sm: 10px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f0f2f5;
-            margin: 0;
-            padding: 20px;
+            font-family: 'DM Sans', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.5;
         }
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 80% 50% at 20% -10%, rgba(52, 211, 153, 0.18), transparent),
+                radial-gradient(ellipse 60% 40% at 90% 10%, rgba(96, 165, 250, 0.12), transparent),
+                radial-gradient(ellipse 50% 30% at 50% 100%, rgba(52, 211, 153, 0.08), transparent);
+            pointer-events: none;
+            z-index: 0;
         }
-        h1 {
-            color: #1a73e8;
-            margin-bottom: 20px;
-        }
-        .api-info {
-            background: #e8f0fe;
-            padding: 10px 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-family: monospace;
-            font-size: 14px;
-        }
-        .api-info code {
-            background: #fff;
-            padding: 2px 6px;
-            border-radius: 4px;
-        }
-        .auth-panel {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        .auth-form {
+
+        .app { position: relative; z-index: 1; min-height: 100vh; }
+
+        /* ── Auth ── */
+        .auth-screen {
+            min-height: 100vh;
             display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            align-items: flex-end;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
         }
-        .auth-form .field {
+
+        .auth-card {
+            width: 100%;
+            max-width: 420px;
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 40px 36px;
+            box-shadow: var(--shadow);
+        }
+
+        .brand {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .brand-icon {
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 16px;
+            background: linear-gradient(135deg, var(--accent), #059669);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            box-shadow: 0 8px 24px rgba(52, 211, 153, 0.3);
+        }
+
+        .brand h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .brand p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-top: 6px;
+        }
+
+        .tabs {
+            display: flex;
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: var(--radius-sm);
+            padding: 4px;
+            margin-bottom: 24px;
+        }
+
+        .tab {
             flex: 1;
-            min-width: 150px;
+            padding: 10px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-family: inherit;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
         }
-        .auth-form label {
+
+        .tab.active {
+            background: var(--accent);
+            color: #052e16;
+        }
+
+        .field { margin-bottom: 16px; }
+
+        .field label {
             display: block;
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
         }
-        .auth-form input {
-            margin: 0;
+
+        .field input {
+            width: 100%;
+            padding: 12px 14px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            font-family: inherit;
+            font-size: 1rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
-        .user-info {
+
+        .field input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-dim);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.15s, opacity 0.15s, background 0.2s;
+        }
+
+        .btn:active { transform: scale(0.98); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .btn-primary {
+            width: 100%;
+            background: linear-gradient(135deg, var(--accent), #10b981);
+            color: #052e16;
+            margin-top: 8px;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            filter: brightness(1.08);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+
+        .btn-ghost:hover { background: var(--surface-hover); color: var(--text); }
+
+        .btn-danger {
+            background: var(--danger-dim);
+            color: var(--danger);
+            border: 1px solid rgba(248, 113, 113, 0.3);
+        }
+
+        .btn-danger:hover { background: rgba(248, 113, 113, 0.25); }
+
+        .btn-sm { padding: 8px 14px; font-size: 0.85rem; }
+
+        .btn-icon {
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            border-radius: 8px;
+            font-size: 1.1rem;
+        }
+
+        /* ── Dashboard ── */
+        .dashboard { display: none; padding-bottom: 48px; }
+        .dashboard.visible { display: block; }
+
+        .header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid #eee;
-            flex-wrap: wrap;
-            gap: 10px;
+            padding: 20px 32px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
-        .user-info span {
-            color: #28a745;
-            font-weight: bold;
-        }
-        .flex-row {
+
+        .header-brand {
             display: flex;
-            gap: 20px;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .header-brand span {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--accent), #059669);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            font-size: 0.9rem;
+        }
+
+        .user-badge .dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+        }
+
+        .main { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+
+        .balance-hero {
+            background: linear-gradient(135deg, rgba(52, 211, 153, 0.2), rgba(96, 165, 250, 0.1));
+            border: 1px solid rgba(52, 211, 153, 0.25);
+            border-radius: 24px;
+            padding: 36px 40px;
+            margin-bottom: 36px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .balance-hero::after {
+            content: '';
+            position: absolute;
+            right: -20px;
+            top: -20px;
+            width: 160px;
+            height: 160px;
+            background: radial-gradient(circle, rgba(52, 211, 153, 0.2), transparent 70%);
+            border-radius: 50%;
+        }
+
+        .balance-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 8px;
+        }
+
+        .balance-amount {
+            font-size: clamp(2.5rem, 6vw, 3.5rem);
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+        }
+
+        .balance-amount .currency {
+            font-size: 0.5em;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-right: 4px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
             flex-wrap: wrap;
+            gap: 12px;
         }
-        .panel {
+
+        .section-header h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .wallets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .wallet-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            transition: transform 0.2s, border-color 0.2s, background 0.2s;
+            animation: fadeUp 0.4s ease both;
+        }
+
+        .wallet-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(52, 211, 153, 0.3);
+            background: var(--surface-hover);
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .wallet-card-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .wallet-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .wallet-menu {
+            display: flex;
+            gap: 4px;
+        }
+
+        .wallet-balance {
+            font-size: 1.75rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 20px;
+        }
+
+        .wallet-balance.positive { color: var(--accent); }
+        .wallet-balance.zero { color: var(--text-muted); }
+
+        .wallet-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .wallet-actions .btn-income {
             flex: 1;
-            min-width: 300px;
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
+            background: var(--accent-dim);
+            color: var(--accent);
+            border: 1px solid rgba(52, 211, 153, 0.25);
         }
-        .panel h3 {
-            margin-top: 0;
-            color: #333;
-            border-bottom: 2px solid #1a73e8;
-            padding-bottom: 8px;
+
+        .wallet-actions .btn-income:hover {
+            background: rgba(52, 211, 153, 0.25);
         }
-        .endpoint-group {
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #eee;
+
+        .wallet-actions .btn-expense {
+            flex: 1;
+            background: var(--danger-dim);
+            color: var(--danger);
+            border: 1px solid rgba(248, 113, 113, 0.25);
         }
-        .endpoint-group h4 {
-            margin: 0 0 10px 0;
-            color: #666;
-            font-size: 14px;
+
+        .wallet-actions .btn-expense:hover {
+            background: rgba(248, 113, 113, 0.25);
         }
-        input, select, textarea {
-            width: 100%;
-            padding: 8px 12px;
-            margin: 5px 0 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-family: monospace;
-            font-size: 14px;
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 24px;
+            background: var(--surface);
+            border: 1px dashed var(--border);
+            border-radius: var(--radius);
+            color: var(--text-muted);
         }
-        textarea {
-            font-family: monospace;
-            resize: vertical;
-        }
-        button {
-            background: #1a73e8;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            margin-right: 8px;
-            margin-bottom: 5px;
-        }
-        button:hover {
-            background: #1557b0;
-        }
-        button.delete {
-            background: #dc3545;
-        }
-        button.delete:hover {
-            background: #b02a37;
-        }
-        button.get {
-            background: #28a745;
-        }
-        button.get:hover {
-            background: #1e7e34;
-        }
-        button.secondary {
-            background: #6c757d;
-        }
-        button.secondary:hover {
-            background: #5a6268;
-        }
-        button.warning {
-            background: #ffc107;
-            color: #212529;
-        }
-        button.warning:hover {
-            background: #e0a800;
-        }
-        pre {
-            background: #1e1e1e;
-            color: #d4d4d4;
-            padding: 12px;
-            border-radius: 8px;
-            overflow-x: auto;
-            font-size: 12px;
-            font-family: monospace;
-        }
-        .status-badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: bold;
-            margin-left: 10px;
-        }
-        .status-ok {
-            background: #d4edda;
-            color: #155724;
-        }
-        .status-error {
-            background: #f8d7da;
-            color: #721c24;
-        }
-        .response-area {
-            margin-top: 15px;
-        }
-        .response-area h4 {
-            margin: 0 0 5px 0;
-            font-size: 14px;
-        }
-        hr {
-            margin: 15px 0;
-        }
-        .hidden {
+
+        .empty-state .icon { font-size: 3rem; margin-bottom: 16px; opacity: 0.6; }
+        .empty-state h3 { color: var(--text); margin-bottom: 8px; font-size: 1.1rem; }
+
+        /* ── Modal ── */
+        .modal-overlay {
             display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .modal-overlay.open { display: flex; }
+
+        .modal {
+            width: 100%;
+            max-width: 440px;
+            background: var(--bg-soft);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 28px;
+            box-shadow: var(--shadow);
+            animation: modalIn 0.25s ease;
+        }
+
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.95) translateY(8px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .modal h3 {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+
+        .modal-footer .btn-primary { width: auto; margin-top: 0; }
+
+        .hidden { display: none !important; }
+
+        /* ── Toast ── */
+        .toasts {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 360px;
+        }
+
+        .toast {
+            padding: 14px 18px;
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            font-weight: 500;
+            box-shadow: var(--shadow);
+            animation: toastIn 0.3s ease;
+            border: 1px solid var(--border);
+        }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .toast.success { background: #064e3b; color: #6ee7b7; border-color: rgba(52, 211, 153, 0.3); }
+        .toast.error { background: #450a0a; color: #fca5a5; border-color: rgba(248, 113, 113, 0.3); }
+        .toast.info { background: #1e3a5f; color: #93c5fd; border-color: rgba(96, 165, 250, 0.3); }
+
+        @media (max-width: 640px) {
+            .header { padding: 16px; flex-wrap: wrap; gap: 12px; }
+            .header-actions { width: 100%; justify-content: flex-end; }
+            .balance-hero { padding: 28px 24px; }
+            .main { padding: 24px 16px; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>💰 Wallet API Tester</h1>
-        <div class="api-info">
-            🚀 API Base URL: <code>http://localhost:8000/api/v1</code><br>
-            🔐 Auth URL: <code>http://localhost:8000/auth</code>
-        </div>
+    <div class="app">
+        <!-- Auth -->
+        <section id="authScreen" class="auth-screen">
+            <div class="auth-card">
+                <div class="brand">
+                    <div class="brand-icon">💰</div>
+                    <h1>Wallet</h1>
+                    <p>Управляйте кошельками и финансами</p>
+                </div>
 
-        <div class="auth-panel">
-            <div id="unauthPanel">
-                <div class="auth-form">
+                <div class="tabs">
+                    <button class="tab active" data-tab="login" onclick="switchTab('login')">Вход</button>
+                    <button class="tab" data-tab="register" onclick="switchTab('register')">Регистрация</button>
+                </div>
+
+                <form id="authForm" onsubmit="submitAuth(event)">
                     <div class="field">
-                        <label>👤 Username</label>
-                        <input type="text" id="loginUsername" placeholder="username">
+                        <label for="username">Имя пользователя</label>
+                        <input type="text" id="username" placeholder="username" autocomplete="username" required>
                     </div>
                     <div class="field">
-                        <label>🔒 Password</label>
-                        <input type="password" id="loginPassword" placeholder="password">
+                        <label for="password">Пароль</label>
+                        <input type="password" id="password" placeholder="••••••" autocomplete="current-password" required>
                     </div>
-                    <button onclick="register()">📝 Регистрация</button>
-                    <button onclick="login()">🔐 Вход</button>
-                </div>
+                    <button type="submit" class="btn btn-primary" id="authSubmitBtn">Войти</button>
+                </form>
             </div>
-            <div id="authPanel" class="hidden">
-                <div class="user-info">
-                    <span>✅ Вы вошли как: <span id="currentUsername"></span></span>
-                    <div>
-                        <button class="warning" onclick="deleteAccount()">🗑️ Удалить аккаунт</button>
-                        <button class="secondary" onclick="logout()">🚪 Выйти</button>
+        </section>
+
+        <!-- Dashboard -->
+        <section id="dashboard" class="dashboard">
+            <header class="header">
+                <div class="header-brand">
+                    <span>💰</span>
+                    Wallet
+                </div>
+                <div class="header-actions">
+                    <div class="user-badge">
+                        <span class="dot"></span>
+                        <span id="currentUsername"></span>
+                    </div>
+                    <button class="btn btn-ghost btn-sm" onclick="logout()">Выйти</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteAccount()">Удалить аккаунт</button>
+                </div>
+            </header>
+
+            <main class="main">
+                <div class="balance-hero">
+                    <div class="balance-label">Общий баланс</div>
+                    <div class="balance-amount" id="totalBalance">
+                        <span class="currency">₽</span>0.00
                     </div>
                 </div>
+
+                <div class="section-header">
+                    <h2>Мои кошельки</h2>
+                    <button class="btn btn-primary btn-sm" onclick="openModal('createModal')" style="width:auto;margin:0;">
+                        + Новый кошелёк
+                    </button>
+                </div>
+
+                <div id="walletsGrid" class="wallets-grid"></div>
+                <div id="emptyState" class="empty-state hidden">
+                    <div class="icon">👛</div>
+                    <h3>Пока нет кошельков</h3>
+                    <p>Создайте первый кошелёк, чтобы начать учёт финансов</p>
+                    <button class="btn btn-primary btn-sm" style="width:auto;margin-top:20px;" onclick="openModal('createModal')">
+                        Создать кошелёк
+                    </button>
+                </div>
+            </main>
+        </section>
+    </div>
+
+    <!-- Create wallet -->
+    <div id="createModal" class="modal-overlay" onclick="closeModalOnOverlay(event, 'createModal')">
+        <div class="modal" onclick="event.stopPropagation()">
+            <h3>Новый кошелёк</h3>
+            <div class="field">
+                <label>Название</label>
+                <input type="text" id="createName" placeholder="Например: Основной">
             </div>
-        </div>
-
-        <div id="mainContent" class="hidden">
-            <div class="flex-row">
-                <div class="panel">
-                    <h3>👛 Кошельки</h3>
-                    
-                    <div class="endpoint-group">
-                        <h4>📋 GET / (все кошельки)</h4>
-                        <button class="get" onclick="sendRequest('GET', '/')">Получить все</button>
-                    </div>
-
-                    <div class="endpoint-group">
-                        <h4>💰 GET /balance (баланс)</h4>
-                        <input type="text" id="balanceName" placeholder="Имя кошелька (оставьте пустым для общего баланса)">
-                        <button class="get" onclick="getBalance()">Получить баланс</button>
-                    </div>
-
-                    <div class="endpoint-group">
-                        <h4>➕ POST /wallets (создать)</h4>
-                        <input type="text" id="createName" placeholder="Имя кошелька">
-                        <input type="number" id="createBalance" placeholder="Начальный баланс" value="0" step="0.01">
-                        <button onclick="createWallet()">Создать</button>
-                    </div>
-
-                    <div class="endpoint-group">
-                        <h4>✏️ PATCH /{wallet_name} (переименовать)</h4>
-                        <input type="text" id="oldName" placeholder="Текущее имя">
-                        <input type="text" id="newName" placeholder="Новое имя">
-                        <button onclick="renameWallet()">Переименовать</button>
-                    </div>
-
-                    <div class="endpoint-group">
-                        <h4>🗑️ DELETE /{wallet_name} (удалить)</h4>
-                        <input type="text" id="deleteName" placeholder="Имя кошелька">
-                        <button class="delete" onclick="deleteWallet()">Удалить</button>
-                    </div>
-                </div>
-
-                <div class="panel">
-                    <h3>📊 Операции</h3>
-
-                    <div class="endpoint-group">
-                        <h4>📈 POST /operations/income (доход)</h4>
-                        <input type="text" id="incomeWallet" placeholder="Имя кошелька">
-                        <input type="number" id="incomeAmount" placeholder="Сумма" step="0.01">
-                        <input type="text" id="incomeDesc" placeholder="Описание (опционально)">
-                        <button class="get" onclick="addIncome()">➕ Добавить доход</button>
-                    </div>
-
-                    <div class="endpoint-group">
-                        <h4>📉 POST /operations/expense (расход)</h4>
-                        <input type="text" id="expenseWallet" placeholder="Имя кошелька">
-                        <input type="number" id="expenseAmount" placeholder="Сумма" step="0.01">
-                        <input type="text" id="expenseDesc" placeholder="Описание (опционально)">
-                        <button class="delete" onclick="addExpense()">➖ Списать расход</button>
-                    </div>
-
-                    <hr>
-
-                    <div class="endpoint-group">
-                        <h4>🔧 Произвольный запрос</h4>
-                        <div style="display: flex; gap: 10px;">
-                            <select id="customMethod" style="width: 100px;">
-                                <option value="GET">GET</option>
-                                <option value="POST">POST</option>
-                                <option value="PATCH">PATCH</option>
-                                <option value="DELETE">DELETE</option>
-                            </select>
-                            <input type="text" id="customUrl" placeholder="/wallets или /balance" style="flex: 1;">
-                        </div>
-                        <textarea id="customBody" rows="3" placeholder='{"name": "value"}'></textarea>
-                        <button onclick="sendCustom()">Отправить</button>
-                    </div>
-                </div>
+            <div class="field">
+                <label>Начальный баланс</label>
+                <input type="number" id="createBalance" value="0" step="0.01" min="0">
             </div>
-        </div>
-
-        <div class="panel">
-            <h3>📬 Ответ сервера</h3>
-            <div class="response-area">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <h4>Статус: <span id="statusCode">—</span></h4>
-                    <button onclick="clearResponse()" style="padding: 2px 8px; font-size: 12px;">Очистить</button>
-                </div>
-                <pre id="response">готов к запросам...</pre>
+            <div class="modal-footer">
+                <button class="btn btn-ghost btn-sm" onclick="closeModal('createModal')">Отмена</button>
+                <button class="btn btn-primary btn-sm" onclick="createWallet()">Создать</button>
             </div>
         </div>
     </div>
 
-    <script>
-        const API_BASE_URL = 'http://localhost:8000';
+    <!-- Transaction -->
+    <div id="txModal" class="modal-overlay" onclick="closeModalOnOverlay(event, 'txModal')">
+        <div class="modal" onclick="event.stopPropagation()">
+            <h3 id="txModalTitle">Операция</h3>
+            <div class="field">
+                <label>Кошелёк</label>
+                <input type="text" id="txWallet" readonly>
+            </div>
+            <div class="field">
+                <label>Сумма</label>
+                <input type="number" id="txAmount" placeholder="0.00" step="0.01" min="0.01">
+            </div>
+            <div class="field">
+                <label>Описание <span style="color:var(--text-muted);text-transform:none;">(необязательно)</span></label>
+                <input type="text" id="txDesc" placeholder="За что?">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost btn-sm" onclick="closeModal('txModal')">Отмена</button>
+                <button class="btn btn-primary btn-sm" id="txSubmitBtn" onclick="submitTransaction()">Подтвердить</button>
+            </div>
+        </div>
+    </div>
 
-        function getToken() {
-            return localStorage.getItem('access_token');
+    <!-- Rename -->
+    <div id="renameModal" class="modal-overlay" onclick="closeModalOnOverlay(event, 'renameModal')">
+        <div class="modal" onclick="event.stopPropagation()">
+            <h3>Переименовать кошелёк</h3>
+            <div class="field">
+                <label>Новое название</label>
+                <input type="text" id="renameNewName" placeholder="Новое имя">
+            </div>
+            <input type="hidden" id="renameOldName">
+            <div class="modal-footer">
+                <button class="btn btn-ghost btn-sm" onclick="closeModal('renameModal')">Отмена</button>
+                <button class="btn btn-primary btn-sm" onclick="renameWallet()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toasts" class="toasts"></div>
+
+    <script>
+        const API_BASE_URL = `${window.location.protocol}//${window.location.hostname}:8000`;
+        let authMode = 'login';
+        let txType = 'income';
+
+        function getToken() { return localStorage.getItem('access_token'); }
+        function getCurrentUser() { return localStorage.getItem('username'); }
+
+        function formatMoney(value) {
+            const num = Number(value) || 0;
+            return num.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
 
-        function getCurrentUser() {
-            return localStorage.getItem('username');
+        function toast(message, type = 'info') {
+            const container = document.getElementById('toasts');
+            const el = document.createElement('div');
+            el.className = `toast ${type}`;
+            el.textContent = message;
+            container.appendChild(el);
+            setTimeout(() => el.remove(), 4000);
+        }
+
+        function switchTab(mode) {
+            authMode = mode;
+            document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === mode));
+            document.getElementById('authSubmitBtn').textContent = mode === 'login' ? 'Войти' : 'Зарегистрироваться';
+            document.getElementById('password').autocomplete = mode === 'login' ? 'current-password' : 'new-password';
         }
 
         function initUI() {
             const token = getToken();
             const username = getCurrentUser();
-            
-            if (token && username) {
-                document.getElementById('unauthPanel').classList.add('hidden');
-                document.getElementById('authPanel').classList.remove('hidden');
-                document.getElementById('mainContent').classList.remove('hidden');
+            const authed = !!(token && username);
+
+            document.getElementById('authScreen').classList.toggle('hidden', authed);
+            document.getElementById('dashboard').classList.toggle('visible', authed);
+            if (authed) {
                 document.getElementById('currentUsername').textContent = username;
-            } else {
-                document.getElementById('unauthPanel').classList.remove('hidden');
-                document.getElementById('authPanel').classList.add('hidden');
-                document.getElementById('mainContent').classList.add('hidden');
+                refreshDashboard();
             }
         }
 
-        async function sendRequest(method, endpoint, body = null) {
+        async function api(method, endpoint, body = null) {
             const token = getToken();
-            
-            if (!token) {
-                alert('Сначала выполните вход');
-                return;
-            }
-
-            const url = `${API_BASE_URL}/api/v1${endpoint}`;
             const options = {
-                method: method,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                }
+                method,
+                headers: { 'Content-Type': 'application/json' },
             };
-            if (body) {
-                options.body = JSON.stringify(body);
+            if (token) options.headers['Authorization'] = `Bearer ${token}`;
+            if (body) options.body = JSON.stringify(body);
+
+            const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
+
+            if (response.status === 401 && token) {
+                logout();
+                throw new Error('Сессия истекла');
             }
 
-            const statusSpan = document.getElementById('statusCode');
-            const responsePre = document.getElementById('response');
-            
-            statusSpan.textContent = '⏳ Загрузка...';
-            responsePre.textContent = 'Отправка запроса...';
+            let data = null;
+            if (response.status === 204) {
+                data = null;
+            } else {
+                const ct = response.headers.get('content-type');
+                const text = await response.text();
+                if (ct && ct.includes('application/json') && text) {
+                    data = JSON.parse(text);
+                } else {
+                    data = text || null;
+                }
+            }
+
+            if (!response.ok) {
+                const detail = data?.detail;
+                const msg = typeof detail === 'string' ? detail
+                    : Array.isArray(detail) ? detail.map(e => e.msg).join(', ')
+                    : `Ошибка ${response.status}`;
+                throw new Error(msg);
+            }
+            return data;
+        }
+
+        async function submitAuth(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('authSubmitBtn');
+            btn.disabled = true;
 
             try {
-                const response = await fetch(url, options);
-                
-                if (response.status === 401) {
-                    logout();
-                    throw new Error('Сессия истекла, выполните вход заново');
-                }
-                
-                const statusClass = response.ok ? 'status-ok' : 'status-error';
-                statusSpan.innerHTML = `${response.status} ${response.statusText}`;
-                statusSpan.className = `status-badge ${statusClass}`;
-                
                 let data;
-                const contentType = response.headers.get('content-type');
-                if (contentType && contentType.includes('application/json')) {
-                    data = await response.json();
-                    responsePre.textContent = JSON.stringify(data, null, 2);
+                if (authMode === 'register') {
+                    data = await api('POST', '/auth/register', { username, password });
                 } else {
-                    data = await response.text();
-                    responsePre.textContent = data || '(пустой ответ)';
+                    data = await api('POST', '/auth/login', { username, password });
                 }
-                return data;
-            } catch (error) {
-                statusSpan.innerHTML = '❌ Ошибка';
-                statusSpan.className = 'status-badge status-error';
-                responsePre.textContent = `Ошибка: ${error.message}`;
-                console.error('Request failed:', error);
-            }
-        }
-
-        // Аутентификация
-        async function register() {
-            const username = document.getElementById('loginUsername').value.trim();
-            const password = document.getElementById('loginPassword').value;
-            
-            if (!username || !password) {
-                alert('Введите username и password');
-                return;
-            }
-            
-            try {
-                const response = await fetch(`${API_BASE_URL}/auth/register`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok) {
-                    localStorage.setItem('access_token', data.access_token);
-                    localStorage.setItem('username', username);
-                    initUI();
-                    alert('Регистрация успешна!');
-                } else {
-                    alert(`Ошибка: ${data.detail || 'Неизвестная ошибка'}`);
-                }
-            } catch (error) {
-                alert(`Ошибка: ${error.message}`);
-            }
-        }
-
-        async function login() {
-            const username = document.getElementById('loginUsername').value.trim();
-            const password = document.getElementById('loginPassword').value;
-            
-            if (!username || !password) {
-                alert('Введите username и password');
-                return;
-            }
-            
-            try {
-                const response = await fetch(`${API_BASE_URL}/auth/login?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok) {
-                    localStorage.setItem('access_token', data.access_token);
-                    localStorage.setItem('username', username);
-                    initUI();
-                    alert('Вход выполнен!');
-                } else {
-                    alert(`Ошибка: ${data.detail || 'Неверные учетные данные'}`);
-                }
-            } catch (error) {
-                alert(`Ошибка: ${error.message}`);
-            }
-        }
-
-        // Удаление аккаунта
-        async function deleteAccount() {
-            const token = getToken();
-            const username = getCurrentUser();
-            
-            if (!token || !username) {
-                alert('Сначала выполните вход');
-                return;
-            }
-            
-            if (!confirm(`Вы уверены, что хотите удалить аккаунт "${username}"? Все кошельки и операции будут удалены безвозвратно!`)) {
-                return;
-            }
-            
-            try {
-                const response = await fetch(`${API_BASE_URL}/auth/delete`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                
-                if (response.ok) {
-                    alert('Аккаунт успешно удалён');
-                    logout();
-                } else {
-                    const data = await response.json();
-                    alert(`Ошибка: ${data.detail || 'Не удалось удалить аккаунт'}`);
-                }
-            } catch (error) {
-                alert(`Ошибка: ${error.message}`);
+                localStorage.setItem('access_token', data.access_token);
+                localStorage.setItem('username', username);
+                document.getElementById('username').value = '';
+                document.getElementById('password').value = '';
+                toast(authMode === 'login' ? 'Добро пожаловать!' : 'Аккаунт создан!', 'success');
+                initUI();
+            } catch (err) {
+                toast(err.message, 'error');
+            } finally {
+                btn.disabled = false;
             }
         }
 
@@ -501,128 +757,175 @@
             localStorage.removeItem('access_token');
             localStorage.removeItem('username');
             initUI();
-            document.getElementById('loginUsername').value = '';
-            document.getElementById('loginPassword').value = '';
-            clearResponse();
         }
 
-        // Кошельки
-        function getBalance() {
-            const name = document.getElementById('balanceName').value;
-            const endpoint = name ? `/balance?wallet_name=${encodeURIComponent(name)}` : '/balance';
-            sendRequest('GET', endpoint);
+        async function deleteAccount() {
+            const username = getCurrentUser();
+            if (!confirm(`Удалить аккаунт «${username}»? Все кошельки будут удалены безвозвратно.`)) return;
+            try {
+                await api('DELETE', '/auth/delete');
+                toast('Аккаунт удалён', 'info');
+                logout();
+            } catch (err) {
+                toast(err.message, 'error');
+            }
         }
 
-        function createWallet() {
-            const name = document.getElementById('createName').value.trim();
-            const balance = parseFloat(document.getElementById('createBalance').value);
-            
-            if (!name) {
-                alert('Введите имя кошелька');
+        async function refreshDashboard() {
+            try {
+                const [balanceData, wallets] = await Promise.all([
+                    api('GET', '/api/v1/balance'),
+                    api('GET', '/api/v1'),
+                ]);
+                document.getElementById('totalBalance').innerHTML =
+                    `<span class="currency">₽</span>${formatMoney(balanceData.total_balance)}`;
+                renderWallets(wallets);
+            } catch (err) {
+                toast(err.message, 'error');
+            }
+        }
+
+        function renderWallets(wallets) {
+            const grid = document.getElementById('walletsGrid');
+            const empty = document.getElementById('emptyState');
+            grid.innerHTML = '';
+
+            if (!wallets || wallets.length === 0) {
+                empty.classList.remove('hidden');
                 return;
             }
-            
-            sendRequest('POST', '/wallets', { name, initial_balance: balance });
-        }
+            empty.classList.add('hidden');
 
-        function renameWallet() {
-            const oldName = document.getElementById('oldName').value.trim();
-            const newName = document.getElementById('newName').value.trim();
-            
-            if (!oldName || !newName) {
-                alert('Введите текущее и новое имя');
-                return;
-            }
-            
-            sendRequest('PATCH', `/${encodeURIComponent(oldName)}`, { new_name: newName });
-        }
-
-        function deleteWallet() {
-            const name = document.getElementById('deleteName').value.trim();
-            if (!name) {
-                alert('Введите имя кошелька');
-                return;
-            }
-            if (confirm(`Удалить кошелек "${name}"?`)) {
-                sendRequest('DELETE', `/${encodeURIComponent(name)}`);
-            }
-        }
-
-        // Операции
-        function addIncome() {
-            const walletName = document.getElementById('incomeWallet').value.trim();
-            const amount = parseFloat(document.getElementById('incomeAmount').value);
-            const description = document.getElementById('incomeDesc').value.trim();
-            
-            if (!walletName || isNaN(amount)) {
-                alert('Введите имя кошелька и сумму');
-                return;
-            }
-            
-            const body = { wallet_name: walletName, amount: amount };
-            if (description) body.description = description;
-            
-            sendRequest('POST', '/operations/income', body);
-        }
-
-        function addExpense() {
-            const walletName = document.getElementById('expenseWallet').value.trim();
-            const amount = parseFloat(document.getElementById('expenseAmount').value);
-            const description = document.getElementById('expenseDesc').value.trim();
-            
-            if (!walletName || isNaN(amount)) {
-                alert('Введите имя кошелька и сумму');
-                return;
-            }
-            
-            const body = { wallet_name: walletName, amount: amount };
-            if (description) body.description = description;
-            
-            sendRequest('POST', '/operations/expense', body);
-        }
-
-        function sendCustom() {
-            const method = document.getElementById('customMethod').value;
-            let url = document.getElementById('customUrl').value;
-            if (!url.startsWith('/')) {
-                url = '/' + url;
-            }
-            let body = null;
-            const bodyText = document.getElementById('customBody').value.trim();
-            if (bodyText) {
-                try {
-                    body = JSON.parse(bodyText);
-                } catch (e) {
-                    alert('Невалидный JSON в теле запроса');
-                    return;
-                }
-            }
-            sendRequest(method, url, body);
-        }
-
-        function clearResponse() {
-            document.getElementById('statusCode').innerHTML = '—';
-            document.getElementById('statusCode').className = '';
-            document.getElementById('response').textContent = 'готов к запросам...';
-        }
-
-        document.querySelectorAll('input').forEach(input => {
-            input.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    const id = input.id;
-                    if (id === 'loginUsername' || id === 'loginPassword') {
-                        if (document.getElementById('loginUsername').value && document.getElementById('loginPassword').value) {
-                            login();
-                        }
-                    } else if (id.includes('balance')) getBalance();
-                    else if (id.includes('create')) createWallet();
-                    else if (id.includes('oldName') || id.includes('newName')) renameWallet();
-                    else if (id.includes('deleteName')) deleteWallet();
-                    else if (id.includes('income')) addIncome();
-                    else if (id.includes('expense')) addExpense();
-                }
+            wallets.forEach((w, i) => {
+                const card = document.createElement('div');
+                card.className = 'wallet-card';
+                card.style.animationDelay = `${i * 0.05}s`;
+                const balClass = w.balance > 0 ? 'positive' : 'zero';
+                card.innerHTML = `
+                    <div class="wallet-card-header">
+                        <div class="wallet-name">${escapeHtml(w.name)}</div>
+                        <div class="wallet-menu">
+                            <button class="btn btn-ghost btn-icon btn-sm" title="Переименовать"
+                                onclick="openRename('${escapeAttr(w.name)}')">✏️</button>
+                            <button class="btn btn-danger btn-icon btn-sm" title="Удалить"
+                                onclick="deleteWallet('${escapeAttr(w.name)}')">🗑️</button>
+                        </div>
+                    </div>
+                    <div class="wallet-balance ${balClass}">₽ ${formatMoney(w.balance)}</div>
+                    <div class="wallet-actions">
+                        <button class="btn btn-income btn-sm" onclick="openTx('income','${escapeAttr(w.name)}')">+ Доход</button>
+                        <button class="btn btn-expense btn-sm" onclick="openTx('expense','${escapeAttr(w.name)}')">− Расход</button>
+                    </div>
+                `;
+                grid.appendChild(card);
             });
+        }
+
+        function escapeHtml(str) {
+            const d = document.createElement('div');
+            d.textContent = str;
+            return d.innerHTML;
+        }
+
+        function escapeAttr(str) {
+            return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        }
+
+        function openModal(id) { document.getElementById(id).classList.add('open'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+        function closeModalOnOverlay(e, id) { if (e.target.classList.contains('modal-overlay')) closeModal(id); }
+
+        async function createWallet() {
+            const name = document.getElementById('createName').value.trim();
+            const balance = parseFloat(document.getElementById('createBalance').value) || 0;
+            if (!name) { toast('Введите название кошелька', 'error'); return; }
+            try {
+                await api('POST', '/api/v1/wallets', { name, initial_balance: balance });
+                closeModal('createModal');
+                document.getElementById('createName').value = '';
+                document.getElementById('createBalance').value = '0';
+                toast(`Кошелёк «${name}» создан`, 'success');
+                refreshDashboard();
+            } catch (err) {
+                toast(err.message, 'error');
+            }
+        }
+
+        function openTx(type, walletName) {
+            txType = type;
+            document.getElementById('txModalTitle').textContent = type === 'income' ? 'Добавить доход' : 'Списать расход';
+            document.getElementById('txWallet').value = walletName;
+            document.getElementById('txAmount').value = '';
+            document.getElementById('txDesc').value = '';
+            const btn = document.getElementById('txSubmitBtn');
+            btn.textContent = type === 'income' ? 'Добавить' : 'Списать';
+            btn.style.background = type === 'income'
+                ? 'linear-gradient(135deg, var(--accent), #10b981)'
+                : 'linear-gradient(135deg, #f87171, #ef4444)';
+            openModal('txModal');
+            setTimeout(() => document.getElementById('txAmount').focus(), 100);
+        }
+
+        async function submitTransaction() {
+            const wallet_name = document.getElementById('txWallet').value;
+            const amount = parseFloat(document.getElementById('txAmount').value);
+            const description = document.getElementById('txDesc').value.trim();
+            if (!wallet_name || isNaN(amount) || amount <= 0) {
+                toast('Введите корректную сумму', 'error');
+                return;
+            }
+            const body = { wallet_name, amount };
+            if (description) body.description = description;
+            try {
+                await api('POST', `/api/v1/operations/${txType}`, body);
+                closeModal('txModal');
+                toast(txType === 'income' ? 'Доход добавлен' : 'Расход списан', 'success');
+                refreshDashboard();
+            } catch (err) {
+                toast(err.message, 'error');
+            }
+        }
+
+        function openRename(oldName) {
+            document.getElementById('renameOldName').value = oldName;
+            document.getElementById('renameNewName').value = oldName;
+            openModal('renameModal');
+            setTimeout(() => {
+                const input = document.getElementById('renameNewName');
+                input.focus();
+                input.select();
+            }, 100);
+        }
+
+        async function renameWallet() {
+            const oldName = document.getElementById('renameOldName').value;
+            const newName = document.getElementById('renameNewName').value.trim();
+            if (!newName) { toast('Введите новое название', 'error'); return; }
+            try {
+                await api('PATCH', `/api/v1/${encodeURIComponent(oldName)}`, { new_name: newName });
+                closeModal('renameModal');
+                toast('Кошелёк переименован', 'success');
+                refreshDashboard();
+            } catch (err) {
+                toast(err.message, 'error');
+            }
+        }
+
+        async function deleteWallet(name) {
+            if (!confirm(`Удалить кошелёк «${name}»?`)) return;
+            try {
+                await api('DELETE', `/api/v1/${encodeURIComponent(name)}`);
+                toast('Кошелёк удалён', 'info');
+                refreshDashboard();
+            } catch (err) {
+                toast(err.message, 'error');
+            }
+        }
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') {
+                ['createModal', 'txModal', 'renameModal'].forEach(closeModal);
+            }
         });
 
         initUI();

@@ -59,7 +59,7 @@ class CreateWalletRequest(BaseModel):
         return v
     
     
-class UserCreate(BaseModel):
+class UserCreateAndLogin(BaseModel):
     username: str = Field(max_length=42)
     password: str = Field(min_length=3)
 

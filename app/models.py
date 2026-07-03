@@ -3,12 +3,15 @@ from decimal import Decimal
 from uuid import uuid4
 
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, UniqueConstraint
 from app.database import Base
 
 
 class WalletORM(Base):
     __tablename__ = 'wallets'
+    __table_args__ = (
+        UniqueConstraint('user_id', 'name', name='uq_wallet_user_name'),
+    )
     id: Mapped[str] = mapped_column(primary_key=True, default=lambda: str(uuid4()))
     name: Mapped[str]
     balance: Mapped[Decimal]

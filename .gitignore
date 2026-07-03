@@ -1,40 +1,89 @@
-# Byte-compiled / optimized / DLL files
+# --- Python ---
 __pycache__/
 *.py[cod]
 *$py.class
+*.so
+.Python
+*.egg
+*.egg-info/
+.eggs/
+build/
+dist/
+pip-wheel-metadata/
+pip-log.txt
+pip-delete-this-directory.txt
+*.manifest
+*.spec
 
-# Virtual environments
+# --- Virtual environments (any depth) ---
+.venv/
 venv/
 env/
 ENV/
-.venv
+**/.venv/
+**/venv/
 
-# IDE files
+# --- Environment & secrets ---
+.env
+.env.*
+!.env_example
+*.pem
+*.key
+secrets/
+
+# --- IDE / editor ---
 .vscode/
 .idea/
+.cursor/
 *.swp
 *.swo
+*~
+.project
+.pydevproject
+.settings/
 
-# Environment variables
-.env
-*.env
+# --- OS ---
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+Desktop.ini
 
-# Database files
+# --- Database (local / practice) ---
 *.db
+*.sqlite
 *.sqlite3
+practice.db
 
-# Logs
+# --- Logs ---
 *.log
+logs/
 
-# pytest
+# --- Tests / coverage / type checkers ---
 .pytest_cache/
 .coverage
+.coverage.*
 htmlcov/
-
-# mypy
+.tox/
+.nox/
+.hypothesis/
 .mypy_cache/
+.dmypy.json
+.ruff_cache/
+.pytype/
 
-#other
+# --- Jupyter ---
+.ipynb_checkpoints/
+
+# --- Docker (local overrides) ---
+docker-compose.override.yml
+
+# --- Project: obsolete / backup files ---
 frontend/without_auth.html
 
-
+# --- Personal learning (not part of the wallet app) ---
+LEARNING_ROADMAP.md
+async_practice/
+python_syntax_practice/
+alembic_practice/

@@ -4,44 +4,43 @@ services:
   db:
     container_name: wallet_db
     restart: unless-stopped
-    image: postgres:16          # готовый образ из Docker Hub
-    environment:                # переменные окружения
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: admin
-      POSTGRES_DB: wallet
+    image: postgres:16
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - "5433:5432"             # второй порт не трогать
+      - "5433:5432"
     volumes:
       - pg_data_wallet:/var/lib/postgresql/data
-
-    # Проверка здоровья (ждём, пока БД реально запустится)
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 3s      # Проверять каждые 3 секунд
-      timeout: 12s       # Таймаут проверки
-      retries: 4        # Количество попыток
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 3s
+      timeout: 12s
+      retries: 4
 
   test_db:
     image: postgres:16
+    env_file:
+      - .env
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: admin
-      POSTGRES_DB: test_db
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${TEST_POSTGRES_DB}
     ports:
-      - "5434:5432"  # ← другой порт
+      - "5434:5432"
 
-  # Второй сервис: твоё приложение
   app:
     container_name: app_wallet
     restart: unless-stopped
-    build: .                    # собирать образ из текущей папки (Dockerfile)
+    build: .
     ports:
-      - "8000:8000" # второй порт не трогать
-    depends_on:                 # ждём, пока db запустится
-        db:
-          condition: service_healthy
-    environment:
-      DATABASE_URL: postgresql+psycopg://postgres:admin@wallet_db:5432/wallet
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
     working_dir: /app
     env_file:
       - .env
@@ -61,12 +60,11 @@ services:
     restart: unless-stopped
     image: nginx:alpine
     ports:
-      - "8080:80" # второй порт не трогать
+      - "8080:80"
     volumes:
       - ./frontend:/usr/share/nginx/html:ro
     depends_on:
       - app
 
-# Тома (хранилища данных)
 volumes:
   pg_data_wallet:

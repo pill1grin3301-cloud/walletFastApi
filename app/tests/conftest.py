@@ -1,3 +1,5 @@
+import os
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
@@ -6,7 +8,9 @@ from sqlalchemy.orm import Session
 from app.main import app
 from app.database import Base, get_db
 
-TEST_DATABASE_URL = "postgresql+psycopg://postgres:admin@test_db:5432/test_db"
+TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL")
+if not TEST_DATABASE_URL:
+    raise RuntimeError("TEST_DATABASE_URL must be set to run tests")
 
 # Создаём engine для тестов
 test_engine = create_engine(TEST_DATABASE_URL, connect_args={"connect_timeout": 10})
@@ -17,6 +21,12 @@ def setup_database():
     Base.metadata.create_all(bind=test_engine)
     yield
     Base.metadata.drop_all(bind=test_engine)
+
+
+@pytest.fixture(autouse=True)
+def disable_telegram_notify(monkeypatch):
+    monkeypatch.setattr("app.service.telegram_notify._send", lambda text: None)
+
 
 @pytest.fixture
 def db_session():
@@ -40,9 +50,11 @@ def db_session():
     connection.close()
     app.dependency_overrides.clear()  # ← ВАЖНО!
 
+
 @pytest.fixture
 def client(db_session):
     return TestClient(app)
+
 
 @pytest.fixture
 def created_wallet(auth_client):
@@ -51,6 +63,7 @@ def created_wallet(auth_client):
         'initial_balance': 100
     })
     return response.json()
+
 
 @pytest.fixture
 def test_user(client):
@@ -62,7 +75,7 @@ def test_user(client):
     client.post("/auth/register", json={"username": username, "password": password})
     
     # Логин
-    response = client.post(f"/auth/login?username={username}&password={password}")
+    response = client.post("/auth/login", json={"username": username, "password": password})
     token = response.json()["access_token"]
 
     from jose import jwt
@@ -72,12 +85,14 @@ def test_user(client):
     
     return {"username": username, "token": token, "id": user_id}
 
+
 @pytest.fixture
 def auth_client(test_user):
     """Клиент с авторизацией"""
     client = TestClient(app)
     client.headers = {"Authorization": f"Bearer {test_user['token']}"}
     return client
+
 
 @pytest.fixture
 def second_user_client(second_user):
@@ -94,7 +109,7 @@ def second_user(client):
     password = "nerofl"
     
     client.post("/auth/register", json={"username": username, "password": password})
-    response = client.post(f"/auth/login?username={username}&password={password}")
+    response = client.post("/auth/login", json={"username": username, "password": password})
     token = response.json()["access_token"]
     
     return {"username": username, "token": token}

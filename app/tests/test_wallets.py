@@ -120,3 +120,41 @@ def test_user_cannot_see_other_wallet(auth_client, second_user_client):
     # Первый пользователь пытается его получить
     response = auth_client.get(f"/api/v1/balance?wallet_name={other_wallet_name}")
     assert response.status_code == 404
+
+
+def test_rename_wallet_success(auth_client, created_wallet):
+    wallet_name = created_wallet["wallet"]
+    new_name = "renamed_wallet"
+    response = auth_client.patch(f"/api/v1/{wallet_name}", json={"new_name": new_name})
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()["name"] == new_name
+
+
+def test_get_balance_specific_wallet(auth_client, created_wallet):
+    wallet_name = created_wallet["wallet"]
+    response = auth_client.get(f"/api/v1/balance?wallet_name={wallet_name}")
+    assert response.status_code == status.HTTP_200_OK
+    data = response.json()
+    assert data["wallet"] == wallet_name
+    assert float(data["balance"]) == 100
+
+
+def test_get_balance_total(auth_client, created_wallet):
+    auth_client.post("/api/v1/wallets", json={"name": "second_wallet", "initial_balance": 50})
+    response = auth_client.get("/api/v1/balance")
+    assert response.status_code == status.HTTP_200_OK
+    assert float(response.json()["total_balance"]) == 150
+
+
+def test_create_wallet_duplicate_name(auth_client, created_wallet):
+    wallet_name = created_wallet["wallet"]
+    response = auth_client.post(
+        "/api/v1/wallets",
+        json={"name": wallet_name, "initial_balance": 10},
+    )
+    assert response.status_code == status.HTTP_409_CONFLICT
+
+
+def test_rename_wallet_not_found(auth_client):
+    response = auth_client.patch("/api/v1/missing_wallet", json={"new_name": "new_name"})
+    assert response.status_code == status.HTTP_404_NOT_FOUND

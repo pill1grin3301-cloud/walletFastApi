@@ -5,9 +5,9 @@ from jose import jwt
 from datetime import datetime, timedelta, timezone
 
 from app.models import UserORM
-from app.schemas import UserCreate
+from app.schemas import UserCreateAndLogin
 from app.core.config import settings
-from app.service.telegram_notify import notify_new_user
+from app.service.telegram_notify import notify_del_user, notify_new_user
 
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 SECRET_KEY = settings.SECRET_KEY
@@ -23,7 +23,7 @@ class AuthService:
     def verify_password(self, plain: str, hashed: str) -> bool:
         return pwd_context.verify(plain, hashed)
     
-    def register(self, data: UserCreate) -> UserORM:
+    def register(self, data: UserCreateAndLogin) -> UserORM:
         # Проверка на существующего пользователя
         existing = self.db.query(UserORM).filter(UserORM.username == data.username).first()
         if existing:
@@ -39,9 +39,9 @@ class AuthService:
         notify_new_user(user.username)
         return user
     
-    def login(self, username: str, password: str) -> str:
-        user = self.db.query(UserORM).filter(UserORM.username == username).first()
-        if not user or not self.verify_password(password, user.hashed_password):
+    def login(self, data: UserCreateAndLogin) -> str:
+        user = self.db.query(UserORM).filter(UserORM.username == data.username).first()
+        if not user or not self.verify_password(data.password, user.hashed_password):
             raise HTTPException(401, "Invalid credentials")
         
         token = jwt.encode(
@@ -69,6 +69,8 @@ class AuthService:
         user = self.db.query(UserORM).filter(UserORM.id == user_id).first()
         if not user:
             raise HTTPException(404, "User not found")
+        name = user.username
         self.db.delete(user)
         self.db.commit()
+        notify_del_user(username=name)
         
