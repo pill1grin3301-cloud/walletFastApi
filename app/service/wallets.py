@@ -1,7 +1,10 @@
+
+
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.models import WalletORM
+from app.models import OperationType, WalletORM
+from app.repository.operations import OperationsRepository
 from app.repository.wallets import WalletsRepository
 from app.schemas import CreateWalletRequest, WalletUpdate
 from app.service.telegram_notify import notify_del_wallet, notify_new_wallet
@@ -11,6 +14,7 @@ class WalletsService:
     def __init__(self, db: Session) -> None:
         self.db = db
         self.wallets_repository = WalletsRepository(db)
+        self.operations_repository = OperationsRepository(db=db)
 
     def get_all_wallets(self, current_user) -> list[WalletORM]:
         wallets_orm = self.wallets_repository.get_all_by_user(current_user.id)
@@ -68,6 +72,16 @@ class WalletsService:
         # Создаём кошелёк с привязкой к пользователю
         new_wallet = self.wallets_repository.create(wallet.name, wallet.initial_balance, current_user.id)
         self.db.add(new_wallet)
+        self.db.flush()  # id кошелька нужен до записи операции
+        if wallet.initial_balance > 0:
+            self.operations_repository.create(
+                user_id=current_user.id,
+                wallet_id=new_wallet.id,
+                type=OperationType.income,
+                amount=wallet.initial_balance,
+                balance_after=new_wallet.balance,
+                description="Initial Balance",
+            )
         self.db.commit()
         self.db.refresh(new_wallet)
         notify_new_wallet(current_user.username, new_wallet.name)

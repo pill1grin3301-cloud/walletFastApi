@@ -34,6 +34,8 @@ class WalletsRepository:
             WalletORM.name == wallet_name,
             WalletORM.user_id == user_id
         ).first()
+    
+    # 
 
     # Добавление расхода
     def add_expense(self, wallet_name: str, amount: float, user_id: str) -> WalletORM:

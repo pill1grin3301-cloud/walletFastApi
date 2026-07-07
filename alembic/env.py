@@ -18,7 +18,8 @@ def resolve_alembic_database_url() -> str:
             "DATABASE_URL must be set. Copy .env_example to .env or export DATABASE_URL."
         )
     # wallet_db resolves only inside docker; from host use published port 5433
-    if "@wallet_db:" in url:
+    running_in_docker = Path("/.dockerenv").exists()
+    if "@wallet_db:" in url and not running_in_docker:
         url = url.replace("@wallet_db:5432", "@localhost:5433")
     return url
 

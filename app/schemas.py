@@ -1,3 +1,6 @@
+from datetime import datetime
+from typing import Literal
+
 from pydantic import BaseModel, Field, field_validator
 
 
@@ -22,6 +25,25 @@ class OperationRequest(BaseModel):
             raise ValueError('Wallet_name cannot be empty')
 
         return v
+    
+
+class OperationResponse(BaseModel):
+    id: str
+    type: Literal["income", "expense"]
+    amount: float
+    description: str | None
+    wallet_name: str
+    balance_after: float
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class OperationListResponse(BaseModel):
+    items: list[OperationResponse]
+    total: int
+    limit: int
+    offset: int
     
 
 class WalletUpdate(BaseModel):

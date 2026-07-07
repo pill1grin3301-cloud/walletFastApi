@@ -1,14 +1,21 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wallet — личные финансы</title>
+    <script>
+        (function () {
+            const saved = localStorage.getItem('wallet_theme');
+            document.documentElement.setAttribute('data-theme', saved === 'light' ? 'light' : 'dark');
+        })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
     <style>
-        :root {
+        :root,
+        [data-theme="dark"] {
             --bg: #0c1222;
             --bg-soft: #111827;
             --surface: rgba(255, 255, 255, 0.06);
@@ -18,6 +25,7 @@
             --text-muted: #94a3b8;
             --accent: #34d399;
             --accent-dim: rgba(52, 211, 153, 0.15);
+            --accent-text: #052e16;
             --danger: #f87171;
             --danger-dim: rgba(248, 113, 113, 0.15);
             --warning: #fbbf24;
@@ -25,6 +33,56 @@
             --shadow: 0 24px 48px rgba(0, 0, 0, 0.35);
             --radius: 16px;
             --radius-sm: 10px;
+            --tabs-bg: rgba(0, 0, 0, 0.25);
+            --input-bg: rgba(0, 0, 0, 0.3);
+            --header-bg: rgba(0, 0, 0, 0.2);
+            --overlay-bg: rgba(0, 0, 0, 0.65);
+            --hero-bg: linear-gradient(135deg, rgba(52, 211, 153, 0.2), rgba(96, 165, 250, 0.1));
+            --hero-border: rgba(52, 211, 153, 0.25);
+            --body-glow:
+                radial-gradient(ellipse 80% 50% at 20% -10%, rgba(52, 211, 153, 0.18), transparent),
+                radial-gradient(ellipse 60% 40% at 90% 10%, rgba(96, 165, 250, 0.12), transparent),
+                radial-gradient(ellipse 50% 30% at 50% 100%, rgba(52, 211, 153, 0.08), transparent);
+            --toast-success-bg: #064e3b;
+            --toast-success-text: #6ee7b7;
+            --toast-error-bg: #450a0a;
+            --toast-error-text: #fca5a5;
+            --toast-info-bg: #1e3a5f;
+            --toast-info-text: #93c5fd;
+        }
+
+        [data-theme="light"] {
+            --bg: #eef2f7;
+            --bg-soft: #ffffff;
+            --surface: #ffffff;
+            --surface-hover: #f8fafc;
+            --border: rgba(15, 23, 42, 0.1);
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --accent: #059669;
+            --accent-dim: rgba(5, 150, 105, 0.12);
+            --accent-text: #ffffff;
+            --danger: #dc2626;
+            --danger-dim: rgba(220, 38, 38, 0.1);
+            --warning: #d97706;
+            --primary: #2563eb;
+            --shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+            --tabs-bg: #e2e8f0;
+            --input-bg: #f8fafc;
+            --header-bg: rgba(255, 255, 255, 0.85);
+            --overlay-bg: rgba(15, 23, 42, 0.35);
+            --hero-bg: linear-gradient(135deg, rgba(5, 150, 105, 0.12), rgba(37, 99, 235, 0.08));
+            --hero-border: rgba(5, 150, 105, 0.2);
+            --body-glow:
+                radial-gradient(ellipse 80% 50% at 20% -10%, rgba(5, 150, 105, 0.1), transparent),
+                radial-gradient(ellipse 60% 40% at 90% 10%, rgba(37, 99, 235, 0.08), transparent),
+                radial-gradient(ellipse 50% 30% at 50% 100%, rgba(5, 150, 105, 0.06), transparent);
+            --toast-success-bg: #ecfdf5;
+            --toast-success-text: #047857;
+            --toast-error-bg: #fef2f2;
+            --toast-error-text: #b91c1c;
+            --toast-info-bg: #eff6ff;
+            --toast-info-text: #1d4ed8;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -41,12 +99,39 @@
             content: '';
             position: fixed;
             inset: 0;
-            background:
-                radial-gradient(ellipse 80% 50% at 20% -10%, rgba(52, 211, 153, 0.18), transparent),
-                radial-gradient(ellipse 60% 40% at 90% 10%, rgba(96, 165, 250, 0.12), transparent),
-                radial-gradient(ellipse 50% 30% at 50% 100%, rgba(52, 211, 153, 0.08), transparent);
+            background: var(--body-glow);
             pointer-events: none;
             z-index: 0;
+        }
+
+        .theme-toggle {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: background 0.2s, transform 0.15s;
+        }
+
+        .theme-toggle:hover {
+            background: var(--surface-hover);
+        }
+
+        .theme-toggle:active {
+            transform: scale(0.96);
+        }
+
+        .theme-toggle--auth {
+            position: absolute;
+            top: 16px;
+            right: 16px;
         }
 
         .app { position: relative; z-index: 1; min-height: 100vh; }
@@ -61,6 +146,7 @@
         }
 
         .auth-card {
+            position: relative;
             width: 100%;
             max-width: 420px;
             background: var(--surface);
@@ -103,7 +189,7 @@
 
         .tabs {
             display: flex;
-            background: rgba(0, 0, 0, 0.25);
+            background: var(--tabs-bg);
             border-radius: var(--radius-sm);
             padding: 4px;
             margin-bottom: 24px;
@@ -125,7 +211,7 @@
 
         .tab.active {
             background: var(--accent);
-            color: #052e16;
+            color: var(--accent-text);
         }
 
         .field { margin-bottom: 16px; }
@@ -143,7 +229,7 @@
         .field input {
             width: 100%;
             padding: 12px 14px;
-            background: rgba(0, 0, 0, 0.3);
+            background: var(--input-bg);
             border: 1px solid var(--border);
             border-radius: var(--radius-sm);
             color: var(--text);
@@ -179,7 +265,7 @@
         .btn-primary {
             width: 100%;
             background: linear-gradient(135deg, var(--accent), #10b981);
-            color: #052e16;
+            color: var(--accent-text);
             margin-top: 8px;
         }
 
@@ -223,7 +309,7 @@
             justify-content: space-between;
             padding: 20px 32px;
             border-bottom: 1px solid var(--border);
-            background: rgba(0, 0, 0, 0.2);
+            background: var(--header-bg);
             backdrop-filter: blur(12px);
             position: sticky;
             top: 0;
@@ -276,8 +362,8 @@
         .main { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
 
         .balance-hero {
-            background: linear-gradient(135deg, rgba(52, 211, 153, 0.2), rgba(96, 165, 250, 0.1));
-            border: 1px solid rgba(52, 211, 153, 0.25);
+            background: var(--hero-bg);
+            border: 1px solid var(--hero-border);
             border-radius: 24px;
             padding: 36px 40px;
             margin-bottom: 36px;
@@ -424,12 +510,125 @@
         .empty-state .icon { font-size: 3rem; margin-bottom: 16px; opacity: 0.6; }
         .empty-state h3 { color: var(--text); margin-bottom: 8px; font-size: 1.1rem; }
 
+        /* ── History ── */
+        .history-section {
+            margin-top: 48px;
+        }
+
+        .history-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .history-filters select {
+            padding: 8px 12px;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.9rem;
+            min-width: 140px;
+        }
+
+        .history-filters select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-dim);
+        }
+
+        .history-table-wrap {
+            overflow-x: auto;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .history-table th,
+        .history-table td {
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .history-table th {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--text-muted);
+            background: var(--header-bg);
+        }
+
+        .history-table tr:last-child td { border-bottom: none; }
+
+        .history-table tbody tr {
+            transition: background 0.15s;
+        }
+
+        .history-table tbody tr:hover {
+            background: var(--surface-hover);
+        }
+
+        .op-type {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .op-type.income {
+            background: var(--accent-dim);
+            color: var(--accent);
+        }
+
+        .op-type.expense {
+            background: var(--danger-dim);
+            color: var(--danger);
+        }
+
+        .op-amount { font-weight: 600; white-space: nowrap; }
+        .op-amount.income { color: var(--accent); }
+        .op-amount.expense { color: var(--danger); }
+
+        .op-desc {
+            color: var(--text-muted);
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .history-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 16px;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .history-footer span {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
         /* ── Modal ── */
         .modal-overlay {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.65);
+            background: var(--overlay-bg);
             backdrop-filter: blur(4px);
             z-index: 100;
             align-items: center;
@@ -498,9 +697,9 @@
             to { opacity: 1; transform: translateX(0); }
         }
 
-        .toast.success { background: #064e3b; color: #6ee7b7; border-color: rgba(52, 211, 153, 0.3); }
-        .toast.error { background: #450a0a; color: #fca5a5; border-color: rgba(248, 113, 113, 0.3); }
-        .toast.info { background: #1e3a5f; color: #93c5fd; border-color: rgba(96, 165, 250, 0.3); }
+        .toast.success { background: var(--toast-success-bg); color: var(--toast-success-text); border-color: rgba(52, 211, 153, 0.3); }
+        .toast.error { background: var(--toast-error-bg); color: var(--toast-error-text); border-color: rgba(248, 113, 113, 0.3); }
+        .toast.info { background: var(--toast-info-bg); color: var(--toast-info-text); border-color: rgba(96, 165, 250, 0.3); }
 
         @media (max-width: 640px) {
             .header { padding: 16px; flex-wrap: wrap; gap: 12px; }
@@ -515,6 +714,7 @@
         <!-- Auth -->
         <section id="authScreen" class="auth-screen">
             <div class="auth-card">
+                <button type="button" class="theme-toggle theme-toggle--auth" onclick="toggleTheme()" title="Сменить тему" aria-label="Сменить тему">🌙</button>
                 <div class="brand">
                     <div class="brand-icon">💰</div>
                     <h1>Wallet</h1>
@@ -548,6 +748,7 @@
                     Wallet
                 </div>
                 <div class="header-actions">
+                    <button type="button" class="theme-toggle" onclick="toggleTheme()" title="Сменить тему" aria-label="Сменить тему">🌙</button>
                     <div class="user-badge">
                         <span class="dot"></span>
                         <span id="currentUsername"></span>
@@ -581,6 +782,51 @@
                         Создать кошелёк
                     </button>
                 </div>
+
+                <section class="history-section">
+                    <div class="section-header">
+                        <h2>История операций</h2>
+                        <div class="history-filters">
+                            <select id="historyWalletFilter" onchange="onHistoryFilterChange()" aria-label="Фильтр по кошельку">
+                                <option value="">Все кошельки</option>
+                            </select>
+                            <select id="historyTypeFilter" onchange="onHistoryFilterChange()" aria-label="Фильтр по типу">
+                                <option value="">Все типы</option>
+                                <option value="income">Доход</option>
+                                <option value="expense">Расход</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="historyEmpty" class="empty-state hidden">
+                        <div class="icon">📋</div>
+                        <h3>Операций пока нет</h3>
+                        <p>Здесь появятся доходы, расходы и начальный баланс кошельков</p>
+                    </div>
+
+                    <div id="historyTableWrap" class="history-table-wrap hidden">
+                        <table class="history-table">
+                            <thead>
+                                <tr>
+                                    <th>Дата</th>
+                                    <th>Тип</th>
+                                    <th>Кошелёк</th>
+                                    <th>Описание</th>
+                                    <th>Сумма</th>
+                                    <th>Баланс после</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyTableBody"></tbody>
+                        </table>
+                    </div>
+
+                    <div id="historyFooter" class="history-footer hidden">
+                        <span id="historyCount"></span>
+                        <button type="button" class="btn btn-ghost btn-sm" id="historyLoadMore" onclick="loadMoreOperations()">
+                            Показать ещё
+                        </button>
+                    </div>
+                </section>
             </main>
         </section>
     </div>
@@ -649,6 +895,29 @@
         const API_BASE_URL = `${window.location.protocol}//${window.location.hostname}:8000`;
         let authMode = 'login';
         let txType = 'income';
+        const HISTORY_LIMIT = 20;
+        let historyOffset = 0;
+        let historyTotal = 0;
+        let historyItems = [];
+
+        function getTheme() {
+            return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+        }
+
+        function updateThemeToggleIcon() {
+            const isLight = getTheme() === 'light';
+            document.querySelectorAll('.theme-toggle').forEach(btn => {
+                btn.textContent = isLight ? '🌙' : '☀️';
+                btn.title = isLight ? 'Тёмная тема' : 'Светлая тема';
+            });
+        }
+
+        function toggleTheme() {
+            const next = getTheme() === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('wallet_theme', next);
+            updateThemeToggleIcon();
+        }
 
         function getToken() { return localStorage.getItem('access_token'); }
         function getCurrentUser() { return localStorage.getItem('username'); }
@@ -656,6 +925,22 @@
         function formatMoney(value) {
             const num = Number(value) || 0;
             return num.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function formatDate(iso) {
+            return new Date(iso).toLocaleString('ru-RU', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+            });
+        }
+
+        function formatOpDescription(desc) {
+            if (!desc) return '—';
+            if (desc === 'Initial Balance') return 'Начальный баланс';
+            return desc;
         }
 
         function toast(message, type = 'info') {
@@ -780,9 +1065,96 @@
                 document.getElementById('totalBalance').innerHTML =
                     `<span class="currency">₽</span>${formatMoney(balanceData.total_balance)}`;
                 renderWallets(wallets);
+                updateHistoryWalletFilter(wallets);
+                await loadOperations(false);
             } catch (err) {
                 toast(err.message, 'error');
             }
+        }
+
+        function updateHistoryWalletFilter(wallets) {
+            const select = document.getElementById('historyWalletFilter');
+            const current = select.value;
+            select.innerHTML = '<option value="">Все кошельки</option>' +
+                (wallets || []).map(w =>
+                    `<option value="${escapeAttr(w.name)}">${escapeHtml(w.name)}</option>`
+                ).join('');
+            if (current && (wallets || []).some(w => w.name === current)) {
+                select.value = current;
+            }
+        }
+
+        function onHistoryFilterChange() {
+            loadOperations(false);
+        }
+
+        function buildHistoryUrl(offset) {
+            const wallet = document.getElementById('historyWalletFilter').value;
+            const type = document.getElementById('historyTypeFilter').value;
+            const params = new URLSearchParams({
+                limit: String(HISTORY_LIMIT),
+                offset: String(offset),
+            });
+            if (wallet) params.set('wallet_name', wallet);
+            if (type) params.set('type', type);
+            return `/api/v1/operations?${params}`;
+        }
+
+        async function loadOperations(append = false) {
+            if (!append) historyOffset = 0;
+
+            const data = await api('GET', buildHistoryUrl(historyOffset));
+            historyTotal = data.total;
+            historyItems = append ? historyItems.concat(data.items) : data.items;
+            historyOffset = historyItems.length;
+            renderOperations();
+        }
+
+        async function loadMoreOperations() {
+            try {
+                await loadOperations(true);
+            } catch (err) {
+                toast(err.message, 'error');
+            }
+        }
+
+        function renderOperations() {
+            const empty = document.getElementById('historyEmpty');
+            const wrap = document.getElementById('historyTableWrap');
+            const footer = document.getElementById('historyFooter');
+            const tbody = document.getElementById('historyTableBody');
+            const countEl = document.getElementById('historyCount');
+            const loadMoreBtn = document.getElementById('historyLoadMore');
+
+            if (!historyItems.length) {
+                empty.classList.remove('hidden');
+                wrap.classList.add('hidden');
+                footer.classList.add('hidden');
+                tbody.innerHTML = '';
+                return;
+            }
+
+            empty.classList.add('hidden');
+            wrap.classList.remove('hidden');
+            footer.classList.remove('hidden');
+
+            tbody.innerHTML = historyItems.map(op => {
+                const typeLabel = op.type === 'income' ? 'Доход' : 'Расход';
+                const sign = op.type === 'income' ? '+' : '−';
+                return `
+                    <tr>
+                        <td>${formatDate(op.created_at)}</td>
+                        <td><span class="op-type ${op.type}">${typeLabel}</span></td>
+                        <td>${escapeHtml(op.wallet_name)}</td>
+                        <td class="op-desc" title="${escapeAttr(formatOpDescription(op.description))}">${escapeHtml(formatOpDescription(op.description))}</td>
+                        <td class="op-amount ${op.type}">${sign} ₽ ${formatMoney(op.amount)}</td>
+                        <td>₽ ${formatMoney(op.balance_after)}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            countEl.textContent = `Показано ${historyItems.length} из ${historyTotal}`;
+            loadMoreBtn.classList.toggle('hidden', historyItems.length >= historyTotal);
         }
 
         function renderWallets(wallets) {
@@ -929,6 +1301,7 @@
         });
 
         initUI();
+        updateThemeToggleIcon();
     </script>
 </body>
 </html>

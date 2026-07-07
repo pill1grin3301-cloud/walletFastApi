@@ -66,6 +66,15 @@ def created_wallet(auth_client):
 
 
 @pytest.fixture
+def empty_wallet(auth_client):
+    response = auth_client.post('/api/v1/wallets', json={
+        'name': 'unique_name',
+        'initial_balance': 0
+    })
+    return response.json()
+
+
+@pytest.fixture
 def test_user(client):
     """Создаёт тестового пользователя и возвращает токен"""
     username = "testuser"
