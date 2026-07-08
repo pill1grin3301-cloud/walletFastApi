@@ -13,8 +13,8 @@ class WalletsService:
 
 
     def get_all_wallets(self) -> list[WalletORM]:
-        walllets_orm =  self.wallets_repository.get_all()
-        return walllets_orm
+        wallets_orm =  self.wallets_repository.get_all()
+        return wallets_orm
 
 
     def get_wallet(self, wallet_name: str | None = None):
@@ -32,7 +32,7 @@ class WalletsService:
         
         # Возвращаем баланс конкретного кошелька
         wallet = self.wallets_repository.get_wallet_by_name(wallet_name=wallet_name)
-        return {"wallet:": wallet.name, 'balance:': wallet.balance}
+        return {"wallet": wallet.name, 'balance': wallet.balance}
     
 
     def rename_wallet(self, name: str, wallet_update: WalletUpdate) -> WalletORM:
@@ -84,4 +84,4 @@ class WalletsService:
     def delete_wallet(self, wallet_name: str):
         self.wallets_repository.delete(wallet_name=wallet_name)
         self.db.commit()
-        return f"Wallet {wallet_name} deleted successfuly"
+        return f"Wallet {wallet_name} deleted successfully"

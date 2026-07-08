@@ -1,9 +1,8 @@
-# Список сервисов (контейнеров)
 services:
-  # Первый сервис: база данных
+  # база данных
   db:
     container_name: wallet_db
-    image: postgres:16          # готовый образ из Docker Hub
+    image: postgres:16          
     environment:                # переменные окружения
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: admin
@@ -20,19 +19,36 @@ services:
       timeout: 12s       # Таймаут проверки
       retries: 4        # Количество попыток
 
-  # Второй сервис: твоё приложение
+  # тестовая база данных
+  test_db:
+    container_name: wallet_test_db
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: test_db
+    ports:
+      - "5434:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d test_db"]
+      interval: 3s
+      timeout: 12s
+      retries: 4
+
+  # приложение
   app:
     container_name: app_wallet
-    build: .                    # собирать образ из текущей папки (Dockerfile)
+    build: .                    # собрать образ из текущей папки (Dockerfile)
     ports:
       - "8000:8000"
-    depends_on:                 # ждём, пока db запустится
+    depends_on:                 # ждём запуска бд
         db:
           condition: service_healthy
     environment:
       DATABASE_URL: postgresql+psycopg://postgres:admin@wallet_db:5432/wallet
     working_dir: /app
 
+  # UI
   frontend:
     container_name: wallet_frontend
     image: nginx:alpine
@@ -43,6 +59,6 @@ services:
     depends_on:
       - app
 
-# Тома (хранилища данных)
+# Том
 volumes:
   pg_data_wallet:

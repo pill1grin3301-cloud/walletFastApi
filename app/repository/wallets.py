@@ -1,7 +1,6 @@
 from decimal import Decimal
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
-from sqlalchemy import select
 
 from app.models import WalletORM
 from app.schemas import WalletUpdate
