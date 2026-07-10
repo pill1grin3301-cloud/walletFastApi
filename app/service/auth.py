@@ -17,9 +17,11 @@ class AuthService:
         self.db = db
     
     def hash_password(self, password: str) -> str:
+        # Хешируем пароль
         return pwd_context.hash(password)
     
     def verify_password(self, plain: str, hashed: str) -> bool:
+        # Проверяем пароль
         return pwd_context.verify(plain, hashed)
     
     def register(self, data: UserCreate) -> UserORM:
@@ -38,10 +40,12 @@ class AuthService:
         return user
     
     def login(self, username: str, password: str) -> str:
+        # Логинимся
         user = self.db.query(UserORM).filter(UserORM.username == username).first()
         if not user or not self.verify_password(password, user.hashed_password):
             raise HTTPException(401, "Invalid credentials")
         
+        # Получаем токен
         token = jwt.encode(
             {"sub": str(user.id), "exp": datetime.now(timezone.utc) + timedelta(hours=24)},
             SECRET_KEY,
@@ -50,7 +54,9 @@ class AuthService:
         return token
     
     def get_current_user(self, token: str) -> UserORM:
+        # Буквально получаем текущего юзера
         try:
+            # Пытаемся получить юзер id из токена
             payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
             user_id = payload.get("sub")
         except Exception as e:
@@ -64,6 +70,7 @@ class AuthService:
     
 
     def delete_user(self, user_id: str) -> UserORM:
+        # Удаляем пользователя
         user = self.db.query(UserORM).filter(UserORM.id == user_id).first()
         self.db.delete(user)
         self.db.commit()

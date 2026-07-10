@@ -17,7 +17,7 @@ class OperationRequest(BaseModel):
         return v
     
     @field_validator('wallet_name')
-    def wallet_mame_not_empty(cls, v:str) -> str:
+    def wallet_name_not_empty(cls, v:str) -> str:
         # Убираем пробелы по краям
         v = v.strip()
         if not v:
@@ -30,7 +30,7 @@ class WalletUpdate(BaseModel):
     new_name: str = Field(max_length=127)
 
     @field_validator('new_name')
-    def mame_not_empty(cls, v:str) -> str:
+    def name_not_empty(cls, v:str) -> str:
         # Убираем пробелы по краям
         v = v.strip()
         if not v:
@@ -44,7 +44,7 @@ class CreateWalletRequest(BaseModel):
     initial_balance: float = 0
 
     @field_validator('name')
-    def mame_not_empty(cls, v:str) -> str:
+    def name_not_empty(cls, v:str) -> str:
         # Убираем пробелы по краям
         v = v.strip()
         if not v:

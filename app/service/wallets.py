@@ -12,6 +12,7 @@ class WalletsService:
         self.wallets_repository = WalletsRepository(db)
 
     def get_all_wallets(self, current_user) -> list[WalletORM]:
+        # Получить все кошельки юзера
         wallets_orm = self.wallets_repository.get_all_by_user(current_user.id)
         return wallets_orm
 
@@ -33,6 +34,7 @@ class WalletsService:
         return {"wallet": wallet.name, "balance": wallet.balance}
 
     def rename_wallet(self, name: str, wallet_update: WalletUpdate, current_user) -> WalletORM:
+        # Переименовать кошелек
         if not self.wallets_repository.is_wallet_exist(name, current_user.id):
             raise HTTPException(
                 status_code=404,
@@ -40,12 +42,14 @@ class WalletsService:
             )
         
         if name == wallet_update.new_name:
+            # Пытаемся переименовать на то же имя
             raise HTTPException(
                 status_code=409,
                 detail=f"This wallet already named {name}, please enter a new name"
             )
         
         if self.wallets_repository.is_wallet_exist(wallet_update.new_name, current_user.id):
+            # Проверяем что кошелька с таким именем еще нет
             raise HTTPException(
                 status_code=409,
                 detail=f"Wallet with name '{wallet_update.new_name}' already exists"
@@ -77,6 +81,7 @@ class WalletsService:
         }
 
     def delete_wallet(self, wallet_name: str, current_user):
+        # Удаляем кошелек
         self.wallets_repository.delete(wallet_name, current_user.id)
         self.db.commit()
         return f"Wallet {wallet_name} deleted successfully"
