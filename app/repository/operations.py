@@ -5,8 +5,8 @@ from sqlalchemy.orm import Session, joinedload
 from app.models import OperationORM, OperationType
 
 
-class OperationsRepository():
-    def __init__(self, db: Session):
+class OperationsRepository:
+    def __init__(self, db: Session) -> None:
         self.db = db
 
     def create(

@@ -9,23 +9,21 @@ class OperationRequest(BaseModel):
     amount: float
     description: str | None = Field(None, max_length=255)
 
-    @field_validator('amount')
+    @field_validator("amount")
+    @classmethod
     def amount_must_be_positive(cls, v: float) -> float:
-        # Проверяем что значение больше нуля
         if v <= 0:
-            raise ValueError('Amount must be positive')
-        # Возвращаем значение если все ок
+            raise ValueError("Amount must be positive")
         return v
-    
-    @field_validator('wallet_name')
-    def wallet_mame_not_empty(cls, v:str) -> str:
-        # Убираем пробелы по краям
+
+    @field_validator("wallet_name")
+    @classmethod
+    def wallet_name_not_empty(cls, v: str) -> str:
         v = v.strip()
         if not v:
-            raise ValueError('Wallet_name cannot be empty')
-
+            raise ValueError("Wallet_name cannot be empty")
         return v
-    
+
 
 class OperationResponse(BaseModel):
     id: str
@@ -44,18 +42,17 @@ class OperationListResponse(BaseModel):
     total: int
     limit: int
     offset: int
-    
+
 
 class WalletUpdate(BaseModel):
     new_name: str = Field(max_length=127)
 
-    @field_validator('new_name')
-    def mame_not_empty(cls, v:str) -> str:
-        # Убираем пробелы по краям
+    @field_validator("new_name")
+    @classmethod
+    def name_not_empty(cls, v: str) -> str:
         v = v.strip()
         if not v:
-            raise ValueError('Name cannot be empty')
-
+            raise ValueError("Name cannot be empty")
         return v
 
 
@@ -63,32 +60,32 @@ class CreateWalletRequest(BaseModel):
     name: str = Field(max_length=127)
     initial_balance: float = 0
 
-    @field_validator('name')
-    def mame_not_empty(cls, v:str) -> str:
-        # Убираем пробелы по краям
+    @field_validator("name")
+    @classmethod
+    def name_not_empty(cls, v: str) -> str:
         v = v.strip()
         if not v:
-            raise ValueError('Name cannot be empty')
+            raise ValueError("Name cannot be empty")
+        return v
 
-        return v
-    
-    @field_validator('initial_balance')
+    @field_validator("initial_balance")
+    @classmethod
     def balance_not_negative(cls, v: float) -> float:
-        # Проверяем что значение больше нуля
         if v < 0:
-            raise ValueError('Balance cannot be negative')
-        # Возвращаем значение если все ок
+            raise ValueError("Balance cannot be negative")
         return v
-    
-    
+
+
 class UserCreateAndLogin(BaseModel):
     username: str = Field(max_length=42)
     password: str = Field(min_length=3)
+
 
 class UserResponse(BaseModel):
     id: str
     username: str = Field(max_length=42)
     is_active: bool
+
 
 class Token(BaseModel):
     access_token: str
